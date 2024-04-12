@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import AuthComponent from '../views/auth/AuthComponent.vue'
+import AuthComponent from '../../views/auth/AuthComponent.vue'
 
 const router = createRouter({
     history: createWebHistory('/'),
