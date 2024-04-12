@@ -1,0 +1,20 @@
+.contenedor {
+    background-image: url('../../../assets/background-car.jpg');
+    background-size: cover;
+    background-position: center;
+}
+
+.form-login {
+    backdrop-filter: blur(8px);
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.placeholder-white::placeholder {
+    color: #fff;
+}
+
+@media (max-width: 576px) {
+    .form-login input {
+        font-size: 14px;
+    }
+}
