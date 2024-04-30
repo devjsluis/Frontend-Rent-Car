@@ -1,5 +1,6 @@
 import axios from "../../../axiosConfig";
 import { defineComponent, onMounted, ref } from "vue";
+import router from "../../core/router";
 
 const AuthComponent = defineComponent({
   name: "AuthComponent",
@@ -57,6 +58,7 @@ const AuthComponent = defineComponent({
               showAlert.value = true;
               alertMessage.value = "Inicio de sesión exitoso";
               alertClass.value = "alert alert-success";
+              router.push({ name: "Dashboard" });
             }
           } catch (error) {
             if (axios.isAxiosError(error)) {
