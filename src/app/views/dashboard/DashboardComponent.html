@@ -1,0 +1,17 @@
+<div
+  class="contenedor container-fluid d-flex justify-content-center align-items-center vw-100 vh-100"
+>
+  <button
+    @click="logout"
+    class="bg-danger text-white fs-1 rounded-5 p-4 fw-bolder border-0"
+  >
+    Cerrar sesión
+  </button>
+  <div
+    v-if="showAlert"
+    :class="[alertClass, 'position-fixed', 'top-0', 'start-50', 'translate-middle-x', 'z-index-1000', 'w-300', 'custom-mt', 'text-center', 'rounded-3']"
+    role="alert"
+  >
+    {{ alertMessage }}
+  </div>
+</div>

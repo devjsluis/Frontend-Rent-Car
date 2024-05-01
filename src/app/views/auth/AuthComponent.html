@@ -1,0 +1,53 @@
+<div
+  class="contenedor container-fluid d-flex justify-content-center align-items-center vw-100 vh-100"
+>
+  <form
+    class="form-login col-xl-4 col-lg-5 col-md-6 col-sm-8 col-10 rounded-4 border p-4 needs-validation"
+    novalidate
+  >
+    <p class="fs-1 text-center mt-4 mb-4 fw-bolder text-white">
+      Iniciar sesión
+    </p>
+    <div class="mb-3 position-relative">
+      <label for="emailId" class="form-label text-white"
+        >Correo electrónico</label
+      >
+      <input
+        type="email"
+        id="emailId"
+        class="form-control form-control-lg text-truncate bg-transparent text-white border-white placeholder-white"
+        placeholder="Ingrese un correo electrónico"
+        required
+      />
+      <div class="invalid-tooltip fw-bolder">
+        Por favor ingrese un correo electrónico válido.
+      </div>
+    </div>
+    <div class="mt-4 mb-4 position-relative">
+      <label for="passwordId" class="form-label text-white">Contraseña</label>
+      <input
+        type="password"
+        id="passwordId"
+        class="form-control form-control-lg text-truncate bg-transparent text-white border-white placeholder-white"
+        placeholder="Ingrese una contraseña"
+        required
+      />
+      <div class="invalid-tooltip fw-bolder">
+        Por favor ingrese una contraseña válida.
+      </div>
+    </div>
+    <div class="mt-4 mb-3 text-center">
+      <button type="submit" class="btn btn-warning btn-lg fw-bolder px-5">
+        Acceder
+      </button>
+    </div>
+  </form>
+
+  <div
+    v-if="showAlert"
+    :class="[alertClass, 'position-fixed', 'top-0', 'start-50', 'translate-middle-x', 'z-index-1000', 'w-300', 'custom-mt', 'text-center', 'rounded-3']"
+    role="alert"
+  >
+    {{ alertMessage }}
+  </div>
+</div>
