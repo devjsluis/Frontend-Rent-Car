@@ -1,0 +1,15 @@
+th,
+td,
+td>i {
+    text-align: center;
+}
+
+.table-container {
+    max-height: calc(100vh - 130px);
+    overflow-y: auto;
+}
+
+.sticky-header {
+    position: sticky;
+    top: 0;
+}
