@@ -2,61 +2,58 @@ import { defineComponent } from "vue";
 import axios from "../../../axiosConfig";
 import { Modal } from "bootstrap";
 import { getStatus } from "../../shared/enums/status.enum";
-import { jwtDecode } from "jwt-decode";
 
-interface ClientesComponentData {
-  clientesData: Cliente[];
-  nuevoCliente: NuevoCliente;
+interface UsuariosComponentData {
+  usuariosData: Usuario[];
+  nuevoUsuario: NuevoUsuario;
   modal: any;
   modalEliminar: any;
   modalReactivar: any;
-  idUser: number;
-  clienteSeleccionado: Cliente | null;
+  usuarioSeleccionado: Usuario | null;
   showAlert: boolean;
   alertMessage: string;
   alertClass: string;
 }
 
-interface Cliente {
+interface Usuario {
   ID: number;
   NOMBRE: string;
   APELLIDOS: string;
   FECHA_NACIMIENTO: string;
-  TELEFONO: string;
   CORREO: string;
+  CONTRASENA: string;
   ESTATUS: number | string;
-  ID_USUARIO_ALTA: number;
+  ID_ROL: number;
 }
 
-interface NuevoCliente {
+interface NuevoUsuario {
   NOMBRE: string;
   APELLIDOS: string;
   FECHA_NACIMIENTO: string;
-  TELEFONO: string;
   CORREO: string;
+  CONTRASENA: string;
   ESTATUS: number | string;
-  ID_USUARIO_ALTA: number;
+  ID_ROL: number;
 }
 
 export default defineComponent({
-  name: "ClientesComponent",
-  data(): ClientesComponentData {
+  name: "UsuariosComponent",
+  data(): UsuariosComponentData {
     return {
-      clientesData: [],
+      usuariosData: [],
       modal: null,
       modalReactivar: null,
       modalEliminar: null,
-      idUser: 0,
-      clienteSeleccionado: null,
-      nuevoCliente: {
+      usuarioSeleccionado: null,
+      nuevoUsuario: {
         NOMBRE: "",
         APELLIDOS: "",
         FECHA_NACIMIENTO: "",
-        TELEFONO: "",
         CORREO: "",
+        CONTRASENA: "",
         ESTATUS: 1,
-        ID_USUARIO_ALTA: 0,
-      } as NuevoCliente,
+        ID_ROL: 1,
+      } as NuevoUsuario,
       showAlert: false,
       alertMessage: "",
       alertClass: "",
@@ -72,16 +69,16 @@ export default defineComponent({
       }, 3000);
     },
     resetModal() {
-      this.nuevoCliente = {
+      this.nuevoUsuario = {
         NOMBRE: "",
         APELLIDOS: "",
         FECHA_NACIMIENTO: "",
-        TELEFONO: "",
         CORREO: "",
+        CONTRASENA: "",
         ESTATUS: 1,
-        ID_USUARIO_ALTA: 0,
+        ID_ROL: 1,
       };
-      this.clienteSeleccionado = null;
+      this.usuarioSeleccionado = null;
     },
     initModal() {
       const modalElement = document.getElementById(
@@ -91,66 +88,56 @@ export default defineComponent({
         this.modal = new Modal(modalElement);
         modalElement.addEventListener("hidden.bs.modal", () => {
           // Resetear los datos cuando se cierra el modal
-          this.nuevoCliente = {
+          this.nuevoUsuario = {
             NOMBRE: "",
             APELLIDOS: "",
             FECHA_NACIMIENTO: "",
-            TELEFONO: "",
             CORREO: "",
+            CONTRASENA: "",
             ESTATUS: 1,
-            ID_USUARIO_ALTA: 0,
+            ID_ROL: 1,
           };
-          this.clienteSeleccionado = null;
+          this.usuarioSeleccionado = null;
         });
       }
     },
-    async cargarClientes() {
+    async cargarUsuarios() {
       try {
         const token = localStorage.getItem("token");
         if (token) {
           axios.defaults.headers.common["Authorization"] = token;
           const response = await axios.get(
-            `${import.meta.env.VITE_APP_API_URL}/clientes/get`
+            `${import.meta.env.VITE_APP_API_URL}/users/get`
           );
-          this.clientesData = response.data.body.map((cliente: Cliente) => {
-            if (cliente.FECHA_NACIMIENTO !== undefined) {
-              const fechaNacimiento = cliente.FECHA_NACIMIENTO.split("T")[0];
-              cliente.FECHA_NACIMIENTO = fechaNacimiento;
+          this.usuariosData = response.data.body.map((usuario: Usuario) => {
+            if (usuario.FECHA_NACIMIENTO !== undefined) {
+              const fechaNacimiento = usuario.FECHA_NACIMIENTO.split("T")[0];
+              usuario.FECHA_NACIMIENTO = fechaNacimiento;
             } else {
               console.warn(
-                `Fecha de nacimiento no definida para el cliente con ID: ${cliente.ID}`
+                `Fecha de nacimiento no definida para el usuario con ID: ${usuario.ID}`
               );
-              cliente.FECHA_NACIMIENTO = "";
+              usuario.FECHA_NACIMIENTO = "";
             }
-            cliente.ESTATUS = getStatus(cliente.ESTATUS);
-            return cliente;
+            usuario.ESTATUS = getStatus(usuario.ESTATUS);
+            return usuario;
           });
         } else {
           console.error("No se encontró el token en localStorage.");
         }
       } catch (error) {
-        console.error("Error al cargar los datos de clientes:", error);
+        console.error("Error al cargar los datos de usuarios:", error);
       }
     },
-    async guardarCliente() {
+    async guardarUsuario() {
       try {
-        const token = localStorage.getItem("token");
-        if (token !== null) {
-          const decodedToken: any = jwtDecode(token);
-          if (decodedToken && decodedToken.id) {
-            this.idUser = decodedToken.id;
-            this.nuevoCliente.ID_USUARIO_ALTA = this.idUser;
-          } else {
-            console.error("Token JWT no contiene información de usuario");
-          }
-        }
         const response = await axios.post(
-          `${import.meta.env.VITE_APP_API_URL}/clientes/create`,
-          this.nuevoCliente
+          `${import.meta.env.VITE_APP_API_URL}/users/create`,
+          this.nuevoUsuario
         );
         if (response.status === 201) {
           this.mostrarAlerta(
-            "Cliente creado satisfactoriamente",
+            "Usuario creado satisfactoriamente",
             "alert alert-success"
           );
           if (this.modal) {
@@ -164,94 +151,94 @@ export default defineComponent({
             console.log("El modal no está inicializado correctamente");
           }
 
-          this.nuevoCliente = {
+          this.nuevoUsuario = {
             NOMBRE: "",
             APELLIDOS: "",
             FECHA_NACIMIENTO: "",
-            TELEFONO: "",
             CORREO: "",
+            CONTRASENA: "",
             ESTATUS: 1,
-            ID_USUARIO_ALTA: 0,
+            ID_ROL: 1,
           };
-          this.cargarClientes();
+          this.cargarUsuarios();
         } else {
-          console.error("Error al crear el cliente:", response.statusText);
+          console.error("Error al crear el usuario:", response.statusText);
         }
       } catch (error) {
-        console.error("Error al guardar el cliente:", error);
+        console.error("Error al guardar el usuario:", error);
       }
     },
-    async editarCliente(cliente: Cliente) {
+    async editarUsuario(usuario: Usuario) {
       try {
-        this.clienteSeleccionado = cliente; // Guarda el cliente seleccionado para edición
+        this.usuarioSeleccionado = usuario; // Guarda el usuario seleccionado para edición
         const modalElement = document.getElementById(
           "exampleModal"
         ) as HTMLElement;
         if (modalElement) {
           this.modal = new Modal(modalElement);
           this.modal.show();
-          this.nuevoCliente = {
-            NOMBRE: cliente.NOMBRE,
-            APELLIDOS: cliente.APELLIDOS,
-            FECHA_NACIMIENTO: cliente.FECHA_NACIMIENTO,
-            TELEFONO: cliente.TELEFONO,
-            CORREO: cliente.CORREO,
-            ESTATUS: cliente.ESTATUS,
-            ID_USUARIO_ALTA: cliente.ID_USUARIO_ALTA,
+          this.nuevoUsuario = {
+            NOMBRE: usuario.NOMBRE,
+            APELLIDOS: usuario.APELLIDOS,
+            FECHA_NACIMIENTO: usuario.FECHA_NACIMIENTO,
+            CORREO: usuario.CORREO,
+            CONTRASENA: usuario.CONTRASENA,
+            ESTATUS: usuario.ESTATUS,
+            ID_ROL: usuario.ID_ROL,
           };
         } else {
           console.error("Elemento modal no encontrado.");
         }
       } catch (error) {
-        console.error("Error al editar el cliente:", error);
+        console.error("Error al editar el usuario:", error);
       }
     },
     async guardarCambios() {
       try {
-        if (this.clienteSeleccionado) {
-          if (this.nuevoCliente.ESTATUS === "Activo") {
-            this.nuevoCliente.ESTATUS = 1;
-          } else if (this.nuevoCliente.ESTATUS === "Inactivo") {
-            this.nuevoCliente.ESTATUS = 0;
-          } else if (this.nuevoCliente.ESTATUS === "Indefinido") {
-            this.nuevoCliente.ESTATUS = 2;
+        if (this.usuarioSeleccionado) {
+          if (this.nuevoUsuario.ESTATUS === "Activo") {
+            this.nuevoUsuario.ESTATUS = 1;
+          } else if (this.nuevoUsuario.ESTATUS === "Inactivo") {
+            this.nuevoUsuario.ESTATUS = 0;
+          } else if (this.nuevoUsuario.ESTATUS === "Indefinido") {
+            this.nuevoUsuario.ESTATUS = 2;
           }
 
           const response = await axios.put(
-            `${import.meta.env.VITE_APP_API_URL}/clientes/update/${
-              this.clienteSeleccionado.ID
+            `${import.meta.env.VITE_APP_API_URL}/users/update/${
+              this.usuarioSeleccionado.ID
             }`,
-            this.nuevoCliente
+            this.nuevoUsuario
           );
           if (response.status === 200) {
             this.mostrarAlerta(
-              "Cliente editado satisfactoriamente",
+              "Usuario editado satisfactoriamente",
               "alert alert-success"
             );
             this.modal.hide();
-            this.clienteSeleccionado = null;
-            this.nuevoCliente = {
+            this.usuarioSeleccionado = null;
+            this.nuevoUsuario = {
               NOMBRE: "",
               APELLIDOS: "",
               FECHA_NACIMIENTO: "",
-              TELEFONO: "",
               CORREO: "",
+              CONTRASENA: "",
               ESTATUS: 1,
-              ID_USUARIO_ALTA: 0,
+              ID_ROL: 1,
             };
-            this.cargarClientes();
+            this.cargarUsuarios();
           } else {
-            console.error("Error al editar el cliente:", response.statusText);
+            console.error("Error al editar el usuario:", response.statusText);
           }
         } else {
-          console.error("No hay cliente seleccionado para editar.");
+          console.error("No hay usuario seleccionado para editar.");
         }
       } catch (error) {
         console.error("Error al guardar los cambios:", error);
       }
     },
-    mostrarModalEliminar(cliente: Cliente) {
-      this.clienteSeleccionado = cliente; // Establecer el cliente seleccionado para eliminar
+    mostrarModalEliminar(usuario: Usuario) {
+      this.usuarioSeleccionado = usuario; // Establecer el usuario seleccionado para eliminar
       const confirmarEliminacionModal = document.getElementById(
         "confirmarEliminacionModal"
       );
@@ -264,35 +251,35 @@ export default defineComponent({
         );
       }
     },
-    async eliminarClienteConfirmado() {
+    async eliminarUsuarioConfirmado() {
       try {
-        if (this.clienteSeleccionado) {
+        if (this.usuarioSeleccionado) {
           const response = await axios.delete(
-            `${import.meta.env.VITE_APP_API_URL}/clientes/delete/${
-              this.clienteSeleccionado.ID
+            `${import.meta.env.VITE_APP_API_URL}/users/delete/${
+              this.usuarioSeleccionado.ID
             }`
           );
           if (response.status === 200) {
             this.mostrarAlerta(
-              "Cliente eliminado satisfactoriamente",
+              "Usuario eliminado satisfactoriamente",
               "alert alert-success"
             );
             this.modalEliminar.hide();
-            this.clienteSeleccionado = null;
-            this.cargarClientes();
+            this.usuarioSeleccionado = null;
+            this.cargarUsuarios();
           } else {
-            console.error("Error al eliminar el cliente:", response.statusText);
+            console.error("Error al eliminar el usuario:", response.statusText);
           }
         } else {
-          console.error("No hay cliente seleccionado para eliminar.");
+          console.error("No hay usuario seleccionado para eliminar.");
         }
       } catch (error) {
-        console.error("Error al eliminar el cliente:", error);
+        console.error("Error al eliminar el usuario:", error);
       }
     },
 
-    mostrarModalReactivar(cliente: Cliente) {
-      this.clienteSeleccionado = cliente; // Establecer el cliente seleccionado para reactivar
+    mostrarModalReactivar(usuario: Usuario) {
+      this.usuarioSeleccionado = usuario; // Establecer el usuario seleccionado para reactivar
       const confirmarReactivacionModal = document.getElementById(
         "confirmarReactivacionModal"
       );
@@ -306,38 +293,38 @@ export default defineComponent({
       }
     },
 
-    async reactivarClienteConfirmado() {
+    async reactivarUsuarioConfirmado() {
       try {
-        if (this.clienteSeleccionado) {
+        if (this.usuarioSeleccionado) {
           const response = await axios.put(
-            `${import.meta.env.VITE_APP_API_URL}/clientes/reactivate/${
-              this.clienteSeleccionado.ID
+            `${import.meta.env.VITE_APP_API_URL}/users/reactivate/${
+              this.usuarioSeleccionado.ID
             }`
           );
           if (response.status === 200) {
             this.mostrarAlerta(
-              "Cliente reactivado satisfactoriamente",
+              "Usuario reactivado satisfactoriamente",
               "alert alert-success"
             );
             this.modalReactivar.hide();
-            this.clienteSeleccionado = null;
-            this.cargarClientes();
+            this.usuarioSeleccionado = null;
+            this.cargarUsuarios();
           } else {
             console.error(
-              "Error al reactivar el cliente:",
+              "Error al reactivar el usuario:",
               response.statusText
             );
           }
         } else {
-          console.error("No hay cliente seleccionado para reactivar.");
+          console.error("No hay usuario seleccionado para reactivar.");
         }
       } catch (error) {
-        console.error("Error al reactivar el cliente:", error);
+        console.error("Error al reactivar el usuario:", error);
       }
     },
   },
   mounted() {
     this.initModal();
-    this.cargarClientes();
+    this.cargarUsuarios();
   },
 });

@@ -3,6 +3,9 @@ import { useAuthStore } from "../../guards/authGuard";
 import router from "../../core/router";
 import { changeActiveItem } from "../../shared/sharedMetods";
 import ClientesComponent from "./../../components/clientes-component/ClientesComponent.vue";
+import UsuariosComponent from "../../components/usuarios-component/UsuariosComponent.vue";
+import PrincipalComponent from "../../components/principal-component/PrincipalComponent.vue";
+import RegistroComponent from "../../components/registro-component/RegistroComponent.vue";
 import { jwtDecode } from "jwt-decode";
 
 interface DashboardComponentData {
@@ -12,6 +15,8 @@ interface DashboardComponentData {
   alertClass: string;
   items: ListItem[];
   clientesData: Cliente[];
+  usuariosData: Usuario[];
+  registerData: Register[];
   idUser: string;
   userName: string;
 }
@@ -33,10 +38,37 @@ interface Cliente {
   ID_USUARIO_ALTA: number;
 }
 
+interface Usuario {
+  ID: number;
+  NOMBRE: string;
+  APELLIDOS: string;
+  FECHA_NACIMIENTO: string;
+  CORREO: string;
+  ESTATUS: number | string;
+  ID_ROL: number;
+}
+
+interface Register {
+  ID: number;
+  ID_CLIENTE: number;
+  ID_VEHICULO: number;
+  FECHA_RENTA: string;
+  FECHA_ENTREGA: string;
+  FECHA_RETORNO: string;
+  COSTO_TOTAL: number;
+  KILOMETRAJE_INICIAL: number;
+  KILOMETRAJE_FINAL: number;
+  DESTINO_DE_VIAJE: string;
+  ESTATUS: number | string;
+}
+
 export default defineComponent({
   name: "DashboardComponent",
   components: {
     ClientesComponent,
+    UsuariosComponent,
+    PrincipalComponent,
+    RegistroComponent,
   },
   data(): DashboardComponentData {
     return {
@@ -45,19 +77,41 @@ export default defineComponent({
       alertMessage: "",
       alertClass: "",
       items: [
+        {
+          icon: "bi bi-bar-chart-fill mx-1",
+          label: "Dashboard",
+          active: false,
+        },
         { icon: "bi bi-person-fill mx-1", label: "Clientes", active: false },
         { icon: "bi bi-people mx-1", label: "Usuarios", active: false },
         { icon: "bi bi-pencil mx-1", label: "Registro", active: false },
       ] as ListItem[],
       clientesData: [],
+      usuariosData: [],
+      registerData: [],
       idUser: "",
       userName: "",
     };
   },
   computed: {
+    isPrincipalActive() {
+      return this.items.some(
+        (item) => item.label === "Dashboard" && item.active
+      );
+    },
     isClientesActive() {
       return this.items.some(
         (item) => item.label === "Clientes" && item.active
+      );
+    },
+    isUsuariosActive() {
+      return this.items.some(
+        (item) => item.label === "Usuarios" && item.active
+      );
+    },
+    isRegisterActive() {
+      return this.items.some(
+        (item) => item.label === "Registro" && item.active
       );
     },
   },
@@ -81,7 +135,6 @@ export default defineComponent({
         if (decodedToken && decodedToken.nombre) {
           this.userName = decodedToken.nombre;
           this.idUser = decodedToken.id;
-          console.log(this.userName, this.idUser);
         } else {
           console.error("Token JWT no contiene información de usuario");
         }
@@ -94,7 +147,7 @@ export default defineComponent({
       }
     },
     async changeActiveItem(selectedItem: ListItem) {
-      changeActiveItem(selectedItem, this.items, this.clientesData);
+      changeActiveItem(selectedItem, this.items);
     },
   },
   mounted() {

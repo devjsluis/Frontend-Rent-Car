@@ -1,0 +1,333 @@
+<div class="text-bg-dark col-lg-10 col-md-9 col-sm-8">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col">
+        <h2 class="d-inline-block px-5 pt-3">Registro de rentas</h2>
+      </div>
+      <div class="col d-flex align-items-center justify-content-center">
+        <div class="d-flex flex-grow-1"></div>
+      </div>
+      <div class="col d-flex align-items-center justify-content-end mx-5">
+        <div class="col d-flex align-items-center justify-content-end mx-2">
+          <button
+            type="button"
+            class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#exampleModal"
+          >
+            Agregar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr class="mx-5 my-2" />
+  <div class="table-container px-5">
+    <table class="table table-dark table-striped table-sm">
+      <thead class="sticky-header">
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Cliente</th>
+          <th scope="col">Vehículo</th>
+          <th scope="col">Fecha de renta</th>
+          <th scope="col">Fecha de entrega</th>
+          <th scope="col">Fecha de retorno</th>
+          <th scope="col">Costo total</th>
+          <th scope="col">Kilometraje inicial</th>
+          <th scope="col">Kilometraje final</th>
+          <th scope="col">Destino de viaje</th>
+          <th scope="col">Estatus</th>
+          <th scope="col">Editar</th>
+          <th scope="col">Eliminar</th>
+          <th scope="col">Restaurar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="register in registerData" :key="register.ID">
+          <td>{{ register.ID }}</td>
+          <td>
+            {{ register.NOMBRE_CLIENTE + " " + register.APELLIDOS_CLIENTE }}
+          </td>
+          <td>
+            {{ register.MARCA + " " + register.MODELO + " " + register.ANIO }}
+          </td>
+          <td>{{ register.FECHA_RENTA }}</td>
+          <td>{{ register.FECHA_ENTREGA }}</td>
+          <td>{{ register.FECHA_RETORNO }}</td>
+          <td>${{ register.COSTO_TOTAL.toLocaleString('en-US') }}</td>
+          <td>{{ register.KILOMETRAJE_INICIAL.toLocaleString('en-US') }} km</td>
+          <td>{{ register.KILOMETRAJE_FINAL.toLocaleString('en-US') }} km</td>
+          <td>{{ register.DESTINO_DE_VIAJE }}</td>
+          <td>{{ register.ESTATUS }}</td>
+          <td>
+            <i
+              class="bi bi-pencil"
+              role="button"
+              @click="editRegister(register)"
+            ></i>
+          </td>
+          <td>
+            <i
+              class="bi bi-trash"
+              role="button"
+              @click="mostrarModalEliminar(register)"
+              v-if="register.ESTATUS === 'Activo'|register.ESTATUS === 'Indefinido'"
+            ></i>
+          </td>
+          <td>
+            <i
+              class="bi bi-cloud-arrow-up-fill"
+              role="button"
+              @click="mostrarModalReactivar(register)"
+              v-if="register.ESTATUS === 'Inactivo'"
+            ></i>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="exampleModal"
+  tabindex="-1"
+  aria-labelledby="exampleModalLabel"
+  aria-hidden="true"
+  ref="myModal"
+  @show="resetNuevoRegistro"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">
+          {{ registerSelected ? 'Editar Registro' : 'Agregar Registro' }}
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body row">
+        <div class="mb-3 col-6">
+          <label for="idCliente" class="form-label">Cliente</label>
+          <select
+            class="form-select"
+            id="idCliente"
+            v-model="newRegister.ID_CLIENTE"
+            required
+          >
+            <option :value="null" disabled>Selecciona un cliente</option>
+            <option v-for="cliente in clientesData" :value="cliente.ID">
+              {{ cliente.APELLIDOS }}, {{ cliente.NOMBRE }}
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-3 col-6">
+          <label for="idVehiculo" class="form-label">Vehículo</label>
+          <select
+            class="form-select"
+            id="idVehiculo"
+            v-model="newRegister.ID_VEHICULO"
+            required
+          >
+            <option :value="null" disabled>Selecciona un vehículo</option>
+            <option v-for="vehiculo in vehiclesData" :value="vehiculo.ID">
+              {{ vehiculo.MARCA + " " + vehiculo.MODELO + " " + vehiculo.ANIO }}
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-3 col-6">
+          <label for="fechaRenta" class="form-label">Fecha de Renta</label>
+          <input
+            type="date"
+            class="form-control"
+            id="fechaRenta"
+            v-model="newRegister.FECHA_RENTA"
+            required
+          />
+        </div>
+        <div class="mb-3 col-6">
+          <label for="fechaEntrega" class="form-label">Fecha de Entrega</label>
+          <input
+            type="date"
+            class="form-control"
+            id="fechaEntrega"
+            v-model="newRegister.FECHA_ENTREGA"
+            required
+          />
+        </div>
+        <div class="mb-3 col-6">
+          <label for="fechaRetorno" class="form-label">Fecha de Retorno</label>
+          <input
+            type="date"
+            class="form-control"
+            id="fechaRetorno"
+            v-model="newRegister.FECHA_RETORNO"
+            required
+          />
+        </div>
+        <div class="mb-3 col-6">
+          <label for="costoTotal" class="form-label">Costo total</label>
+          <div class="input-group mb-3">
+            <span class="input-group-text">$</span>
+            <input
+              type="number"
+              class="form-control"
+              id="costoTotal"
+              v-model="newRegister.COSTO_TOTAL"
+              required
+              min="0"
+            />
+          </div>
+        </div>
+        <div class="mb-3 col-6">
+          <label for="kilometrajeInicial" class="form-label"
+            >Kilometraje Inicial</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            id="kilometrajeInicial"
+            v-model="newRegister.KILOMETRAJE_INICIAL"
+            required
+            min="0"
+          />
+        </div>
+        <div class="mb-3 col-6">
+          <label for="kilometrajeFinal" class="form-label"
+            >Kilometraje Final</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            id="kilometrajeFinal"
+            v-model="newRegister.KILOMETRAJE_FINAL"
+            required
+            min="0"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="destinoViaje" class="form-label">Destino de viaje</label>
+          <input
+            type="text"
+            class="form-control"
+            id="destinoViaje"
+            v-model="newRegister.DESTINO_DE_VIAJE"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cerrar
+        </button>
+        <button
+          v-if="!registerSelected"
+          type="button"
+          class="btn btn-primary"
+          @click="saveRegister"
+        >
+          Guardar
+        </button>
+        <button
+          v-else
+          type="button"
+          class="btn btn-primary"
+          @click="guardarCambios"
+        >
+          Guardar Cambios
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="confirmarReactivacionModal"
+  tabindex="-1"
+  aria-labelledby="confirmarReactivacionModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmarReactivacionModalLabel">
+          Confirmar Reactivación
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro de querer reactivar el registro con ID {{ registerSelected
+        ? registerSelected.ID : 'NULL' }}?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          @click="reactivateRegister"
+        >
+          Reactivar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="confirmarEliminacionModal"
+  tabindex="-1"
+  aria-labelledby="confirmarEliminacionModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmarEliminacionModalLabel">
+          Confirmar Eliminación
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        ¿Está seguro que desea eliminar el registro con ID {{ registerSelected ?
+        registerSelected.ID : 'NULL' }}?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-danger" @click="deleteRegister">
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  v-if="showAlert"
+  :class="[alertClass, 'position-fixed', 'top-0', 'start-50', 'translate-middle-x', 'z-index-1000', 'w-300', 'custom-mt', 'text-center', 'rounded-3']"
+  role="alert"
+>
+  {{ alertMessage }}
+</div>

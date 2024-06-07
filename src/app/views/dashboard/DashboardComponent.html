@@ -47,7 +47,10 @@
     </div>
   </div>
 
+  <PrincipalComponent v-if="isPrincipalActive" />
   <ClientesComponent v-if="isClientesActive" />
+  <UsuariosComponent v-if="isUsuariosActive" />
+  <RegistroComponent v-if="isRegisterActive" />
 
   <div
     v-if="showAlert"

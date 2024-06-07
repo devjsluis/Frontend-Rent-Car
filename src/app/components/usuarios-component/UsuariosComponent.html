@@ -2,7 +2,7 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col">
-        <h2 class="d-inline-block px-5 pt-3">Clientes</h2>
+        <h2 class="d-inline-block px-5 pt-3">Usuarios</h2>
       </div>
       <div class="col d-flex align-items-center justify-content-center">
         <div class="d-flex flex-grow-1"></div>
@@ -30,49 +30,44 @@
           <th scope="col">Nombre</th>
           <th scope="col">Apellidos</th>
           <th scope="col">Fecha de nacimiento</th>
-          <th scope="col">Teléfono</th>
           <th scope="col">Correo</th>
           <th scope="col">Estatus</th>
-          <th scope="col">Usuario Alta</th>
+          <th scope="col">Rol</th>
           <th scope="col">Editar</th>
           <th scope="col">Eliminar</th>
           <th scope="col">Restaurar</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="cliente in clientesData" :key="cliente.ID">
-          <td>{{ cliente.ID }}</td>
-          <td>{{ cliente.NOMBRE }}</td>
-          <td>{{ cliente.APELLIDOS }}</td>
-          <td>{{ cliente.FECHA_NACIMIENTO }}</td>
-          <td>{{ cliente.TELEFONO }}</td>
-          <td>{{ cliente.CORREO }}</td>
-          <td>{{ cliente.ESTATUS }}</td>
-          <td>
-            {{ cliente.NOMBRE_USUARIO_ALTA + " " +
-            cliente.APELLIDO_USUARIO_ALTA}}
-          </td>
+        <tr v-for="usuario in usuariosData" :key="usuario.ID">
+          <td>{{ usuario.ID }}</td>
+          <td>{{ usuario.NOMBRE }}</td>
+          <td>{{ usuario.APELLIDOS }}</td>
+          <td>{{ usuario.FECHA_NACIMIENTO }}</td>
+          <td>{{ usuario.CORREO }}</td>
+          <td>{{ usuario.ESTATUS }}</td>
+          <td>{{ usuario.ID_ROL }}</td>
           <td>
             <i
               class="bi bi-pencil"
               role="button"
-              @click="editarCliente(cliente)"
+              @click="editarUsuario(usuario)"
             ></i>
           </td>
           <td>
             <i
               class="bi bi-trash"
               role="button"
-              @click="mostrarModalEliminar(cliente)"
-              v-if="cliente.ESTATUS === 'Activo'|cliente.ESTATUS === 'Indefinido'"
+              @click="mostrarModalEliminar(usuario)"
+              v-if="usuario.ESTATUS === 'Activo'|usuario.ESTATUS === 'Indefinido'"
             ></i>
           </td>
           <td>
             <i
               class="bi bi-cloud-arrow-up-fill"
               role="button"
-              @click="mostrarModalReactivar(cliente)"
-              v-if="cliente.ESTATUS === 'Inactivo'"
+              @click="mostrarModalReactivar(usuario)"
+              v-if="usuario.ESTATUS === 'Inactivo'"
             ></i>
           </td>
         </tr>
@@ -88,13 +83,13 @@
   aria-labelledby="exampleModalLabel"
   aria-hidden="true"
   ref="myModal"
-  @show="resetNuevoCliente"
+  @show="resetNuevoUsuario"
 >
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">
-          {{ clienteSeleccionado ? 'Editar Cliente' : 'Agregar Cliente' }}
+          {{ usuarioSeleccionado ? 'Editar Usuario' : 'Agregar Usuario' }}
         </h5>
         <button
           type="button"
@@ -110,7 +105,7 @@
             type="text"
             class="form-control"
             id="nombre"
-            v-model="nuevoCliente.NOMBRE"
+            v-model="nuevoUsuario.NOMBRE"
             required
           />
         </div>
@@ -120,7 +115,7 @@
             type="text"
             class="form-control"
             id="apellidos"
-            v-model="nuevoCliente.APELLIDOS"
+            v-model="nuevoUsuario.APELLIDOS"
             required
           />
         </div>
@@ -132,17 +127,7 @@
             type="date"
             class="form-control"
             id="fechaNacimiento"
-            v-model="nuevoCliente.FECHA_NACIMIENTO"
-            required
-          />
-        </div>
-        <div class="mb-3">
-          <label for="telefono" class="form-label">Teléfono</label>
-          <input
-            type="tel"
-            class="form-control"
-            id="telefono"
-            v-model="nuevoCliente.TELEFONO"
+            v-model="nuevoUsuario.FECHA_NACIMIENTO"
             required
           />
         </div>
@@ -152,7 +137,17 @@
             type="email"
             class="form-control"
             id="correo"
-            v-model="nuevoCliente.CORREO"
+            v-model="nuevoUsuario.CORREO"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="contrasena" class="form-label">Contraseña</label>
+          <input
+            type="password"
+            class="form-control"
+            id="contrasena"
+            v-model="nuevoUsuario.CONTRASENA"
             required
           />
         </div>
@@ -163,10 +158,10 @@
           Cerrar
         </button>
         <button
-          v-if="!clienteSeleccionado"
+          v-if="!usuarioSeleccionado"
           type="button"
           class="btn btn-primary"
-          @click="guardarCliente"
+          @click="guardarUsuario"
         >
           Guardar
         </button>
@@ -204,8 +199,8 @@
         ></button>
       </div>
       <div class="modal-body">
-        ¿Estás seguro de querer reactivar al cliente {{ clienteSeleccionado ?
-        clienteSeleccionado.NOMBRE + " " + clienteSeleccionado.APELLIDOS : ''
+        ¿Estás seguro de querer reactivar al usuario {{ usuarioSeleccionado ?
+        usuarioSeleccionado.NOMBRE + " " + usuarioSeleccionado.APELLIDOS : ''
         }}?
       </div>
       <div class="modal-footer">
@@ -215,7 +210,7 @@
         <button
           type="button"
           class="btn btn-success"
-          @click="reactivarClienteConfirmado"
+          @click="reactivarUsuarioConfirmado"
         >
           Reactivar
         </button>
@@ -245,8 +240,8 @@
         ></button>
       </div>
       <div class="modal-body">
-        ¿Está seguro que desea eliminar al cliente {{ clienteSeleccionado ?
-        clienteSeleccionado.NOMBRE + " " + clienteSeleccionado.APELLIDOS : ''
+        ¿Está seguro que desea eliminar al usuario {{ usuarioSeleccionado ?
+        usuarioSeleccionado.NOMBRE + " " + usuarioSeleccionado.APELLIDOS : ''
         }}?
       </div>
       <div class="modal-footer">
@@ -256,7 +251,7 @@
         <button
           type="button"
           class="btn btn-danger"
-          @click="eliminarClienteConfirmado"
+          @click="eliminarUsuarioConfirmado"
         >
           Eliminar
         </button>
