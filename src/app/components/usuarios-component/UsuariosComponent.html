@@ -9,12 +9,7 @@
       </div>
       <div class="col d-flex align-items-center justify-content-end mx-5">
         <div class="col d-flex align-items-center justify-content-end mx-2">
-          <button
-            type="button"
-            class="btn btn-primary"
-            data-bs-toggle="modal"
-            data-bs-target="#exampleModal"
-          >
+          <button type="button" class="btn btn-primary" @click="initModal()">
             Agregar
           </button>
         </div>
@@ -46,7 +41,11 @@
           <td>{{ usuario.FECHA_NACIMIENTO }}</td>
           <td>{{ usuario.CORREO }}</td>
           <td>{{ usuario.ESTATUS }}</td>
-          <td>{{ usuario.ID_ROL }}</td>
+          <td>
+            {{ usuario.ID_ROL === 1 ? 'Administrador' : (usuario.ID_ROL === 2 ?
+            'Gerente' : (usuario.ID_ROL === 3 ? 'Vendedor' : 'Desconocido')) }}
+          </td>
+
           <td>
             <i
               class="bi bi-pencil"

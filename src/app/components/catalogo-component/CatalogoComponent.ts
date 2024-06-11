@@ -65,19 +65,12 @@ export default defineComponent({
       this.catalogoSeleccionado = null;
     },
     initModal() {
-      const modalElement = document.getElementById(
-        "exampleModal"
-      ) as HTMLElement;
+      const modalElement = document.getElementById("exampleModal");
       if (modalElement) {
         this.modal = new Modal(modalElement);
         modalElement.addEventListener("hidden.bs.modal", () => {
           // Resetear los datos cuando se cierra el modal
-          this.nuevoCatalogo = {
-            DESCRIPCION: "",
-            ESTATUS: 1,
-            ID_CATALOGO: this.nuevoCatalogo.ID_CATALOGO,
-          };
-          this.catalogoSeleccionado = null;
+          this.resetModal();
         });
         this.modal.show(); // Mostrar el modal
       } else {
@@ -132,6 +125,31 @@ export default defineComponent({
           console.error("Error al crear el catálogo:", response.statusText);
         }
       } catch (error) {
+        if (axios.isAxiosError(error)) {
+          if (error.response?.status === 409) {
+            this.mostrarAlerta(
+              "No se puede crear el catálogo porque esta descripción ya existe",
+              "alert alert-danger"
+            );
+
+            if (this.modal) {
+              this.modal.hide();
+              this.resetModal();
+              const modalBackdrop = document.querySelector(".modal-backdrop"); // Seleccionar el elemento con la clase 'modal-backdrop'
+              if (modalBackdrop) {
+                modalBackdrop.parentNode?.removeChild(modalBackdrop); // Eliminar el elemento del DOM
+              }
+            } else {
+              console.log("El modal no está inicializado correctamente");
+            }
+
+            this.nuevoCatalogo = {
+              DESCRIPCION: "",
+              ESTATUS: 1,
+              ID_CATALOGO: this.nuevoCatalogo.ID_CATALOGO,
+            };
+          }
+        }
         console.error("Error al guardar el catálogo:", error);
       }
     },
@@ -201,6 +219,22 @@ export default defineComponent({
           console.error("No hay catálogo seleccionado para editar.");
         }
       } catch (error) {
+        if (axios.isAxiosError(error)) {
+          if (error.response?.status === 409) {
+            this.mostrarAlerta(
+              "No se puede actualizar el catálogo porque esa descripción ya existe",
+              "alert alert-danger"
+            );
+
+            this.modal.hide();
+            this.catalogoSeleccionado = null;
+            this.nuevoCatalogo = {
+              DESCRIPCION: "",
+              ESTATUS: 1,
+              ID_CATALOGO: this.nuevoCatalogo.ID_CATALOGO,
+            };
+          }
+        }
         console.error("Error al guardar los cambios:", error);
       }
     },

@@ -84,30 +84,25 @@ export default defineComponent({
       this.clienteSeleccionado = null;
     },
     initModal() {
-      const modalElement = document.getElementById(
-        "exampleModal"
-      ) as HTMLElement;
+      const modalElement = document.getElementById("exampleModal");
       if (modalElement) {
         this.modal = new Modal(modalElement);
         modalElement.addEventListener("hidden.bs.modal", () => {
           // Resetear los datos cuando se cierra el modal
-          this.nuevoCliente = {
-            NOMBRE: "",
-            APELLIDOS: "",
-            FECHA_NACIMIENTO: "",
-            TELEFONO: "",
-            CORREO: "",
-            ESTATUS: 1,
-            ID_USUARIO_ALTA: 0,
-          };
-          this.clienteSeleccionado = null;
+          this.resetModal();
         });
+        this.modal.show(); // Mostrar el modal
+      } else {
+        console.error("No se encontró el elemento modal.");
       }
     },
     async cargarClientes() {
       try {
         const token = localStorage.getItem("token");
         if (token) {
+          //PARA VERIFICAR EL ROL
+          // const decodedToken: any = jwtDecode(token);
+          // console.log(decodedToken.rol);
           axios.defaults.headers.common["Authorization"] = token;
           const response = await axios.get(
             `${import.meta.env.VITE_APP_API_URL}/clientes/get`
@@ -337,7 +332,6 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.initModal();
     this.cargarClientes();
   },
 });

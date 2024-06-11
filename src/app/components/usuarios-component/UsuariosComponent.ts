@@ -81,24 +81,16 @@ export default defineComponent({
       this.usuarioSeleccionado = null;
     },
     initModal() {
-      const modalElement = document.getElementById(
-        "exampleModal"
-      ) as HTMLElement;
+      const modalElement = document.getElementById("exampleModal");
       if (modalElement) {
         this.modal = new Modal(modalElement);
         modalElement.addEventListener("hidden.bs.modal", () => {
           // Resetear los datos cuando se cierra el modal
-          this.nuevoUsuario = {
-            NOMBRE: "",
-            APELLIDOS: "",
-            FECHA_NACIMIENTO: "",
-            CORREO: "",
-            CONTRASENA: "",
-            ESTATUS: 1,
-            ID_ROL: 1,
-          };
-          this.usuarioSeleccionado = null;
+          this.resetModal();
         });
+        this.modal.show(); // Mostrar el modal
+      } else {
+        console.error("No se encontró el elemento modal.");
       }
     },
     async cargarUsuarios() {
@@ -324,7 +316,6 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.initModal();
     this.cargarUsuarios();
   },
 });

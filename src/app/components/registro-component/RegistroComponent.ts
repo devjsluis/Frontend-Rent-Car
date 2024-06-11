@@ -127,27 +127,16 @@ export default defineComponent({
       this.registerSelected = null;
     },
     initModal() {
-      const modalElement = document.getElementById(
-        "exampleModal"
-      ) as HTMLElement;
+      const modalElement = document.getElementById("exampleModal");
       if (modalElement) {
         this.modal = new Modal(modalElement);
         modalElement.addEventListener("hidden.bs.modal", () => {
           // Resetear los datos cuando se cierra el modal
-          this.newRegister = {
-            ID_CLIENTE: 0,
-            ID_VEHICULO: 0,
-            FECHA_RENTA: "",
-            FECHA_ENTREGA: "",
-            FECHA_RETORNO: "",
-            COSTO_TOTAL: 0,
-            KILOMETRAJE_INICIAL: 0,
-            KILOMETRAJE_FINAL: 0,
-            DESTINO_DE_VIAJE: "",
-            ESTATUS: 1,
-          };
-          this.registerSelected = null;
+          this.resetModal();
         });
+        this.modal.show(); // Mostrar el modal
+      } else {
+        console.error("No se encontró el elemento modal.");
       }
     },
     async cargarRegisterRent() {
@@ -505,7 +494,6 @@ export default defineComponent({
   //   },
   // },
   mounted() {
-    this.initModal();
     this.cargarRegisterRent();
   },
 });
