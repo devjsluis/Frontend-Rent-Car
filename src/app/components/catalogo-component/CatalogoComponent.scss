@@ -1,0 +1,24 @@
+th,
+td,
+td>i {
+    text-align: center;
+}
+
+.table-container {
+    max-height: calc(100vh - 130px);
+    overflow-y: auto;
+}
+
+.sticky-header {
+    position: sticky;
+    top: 0;
+}
+
+.custom-mt {
+    padding: 15px 45px 15px;
+    margin-top: 70px;
+}
+
+.nav-tabs {
+    border: transparent;
+}

@@ -1,0 +1,350 @@
+<div class="text-bg-dark col-lg-10 col-md-9 col-sm-8">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col">
+        <h2 class="d-inline-block px-5 pt-3">Catálogos</h2>
+      </div>
+      <div class="col d-flex align-items-center justify-content-center">
+        <div class="d-flex flex-grow-1"></div>
+      </div>
+      <div class="col d-flex align-items-center justify-content-end mx-5">
+        <div class="col d-flex align-items-center justify-content-end mx-2">
+          <button type="button" class="btn btn-primary" @click="initModal()">
+            Agregar
+          </button>
+        </div>
+      </div>
+    </div>
+    <hr class="mx-5 my-2" />
+    <ul class="nav nav-tabs mx-5 my-2 text-bg-dark">
+      <li class="nav-item">
+        <a
+          class="nav-link text-bg-dark"
+          :class="{ active: activeTab === 'Tipos de vehículo' }"
+          @click="setActiveTab('Tipos de vehículo')"
+          aria-current="page"
+          href="#"
+          >Tipos de vehículo</a
+        >
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link text-bg-dark"
+          :class="{ active: activeTab === 'Marcas' }"
+          @click="setActiveTab('Marcas')"
+          aria-current="page"
+          href="#"
+          >Marcas</a
+        >
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link text-bg-dark"
+          :class="{ active: activeTab === 'Modelos' }"
+          @click="setActiveTab('Modelos')"
+          href="#"
+          >Modelos</a
+        >
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link text-bg-dark"
+          :class="{ active: activeTab === 'Años' }"
+          @click="setActiveTab('Años')"
+          href="#"
+          >Años</a
+        >
+      </li>
+    </ul>
+
+    <div class="table-container px-5">
+      <table class="table table-dark table-striped table-sm">
+        <thead class="sticky-header">
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Descripción</th>
+            <th scope="col">Editar</th>
+            <th scope="col">Eliminar</th>
+            <th scope="col">Reactivar</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="tipo in catalogData"
+            :key="tipo.ID"
+            v-if="activeTab === 'Tipos de vehículo'"
+          >
+            <td>{{ tipo.ID }}</td>
+            <td>{{ tipo.DESCRIPCION }}</td>
+            <td>
+              <i
+                class="bi bi-pencil"
+                role="button"
+                @click="editarCatalogo(tipo)"
+              ></i>
+            </td>
+            <td>
+              <i
+                class="bi bi-trash"
+                role="button"
+                @click="mostrarModalEliminar(tipo)"
+                v-if="tipo.ESTATUS === 'Activo'|tipo.ESTATUS === 'Indefinido'"
+              ></i>
+            </td>
+            <td>
+              <i
+                class="bi bi-cloud-arrow-up-fill"
+                role="button"
+                @click="mostrarModalReactivar(tipo)"
+                v-if="tipo.ESTATUS === 'Inactivo'"
+              ></i>
+            </td>
+          </tr>
+          <tr
+            v-for="marca in catalogData"
+            :key="marca.ID"
+            v-if="activeTab === 'Marcas'"
+          >
+            <td>{{ marca.ID }}</td>
+            <td>{{ marca.DESCRIPCION }}</td>
+            <td>
+              <i
+                class="bi bi-pencil"
+                role="button"
+                @click="editarCatalogo(marca)"
+              ></i>
+            </td>
+            <td>
+              <i
+                class="bi bi-trash"
+                role="button"
+                @click="mostrarModalEliminar(marca)"
+                v-if="marca.ESTATUS === 'Activo'|marca.ESTATUS === 'Indefinido'"
+              ></i>
+            </td>
+            <td>
+              <i
+                class="bi bi-cloud-arrow-up-fill"
+                role="button"
+                @click="mostrarModalReactivar(marca)"
+                v-if="marca.ESTATUS === 'Inactivo'"
+              ></i>
+            </td>
+          </tr>
+          <tr
+            v-for="modelo in catalogData"
+            :key="modelo.ID"
+            v-if="activeTab === 'Modelos'"
+          >
+            <td>{{ modelo.ID }}</td>
+            <td>{{ modelo.DESCRIPCION }}</td>
+            <td>
+              <i
+                class="bi bi-pencil"
+                role="button"
+                @click="editarCatalogo(modelo)"
+              ></i>
+            </td>
+            <td>
+              <i
+                class="bi bi-trash"
+                role="button"
+                @click="mostrarModalEliminar(modelo)"
+                v-if="modelo.ESTATUS === 'Activo'|modelo.ESTATUS === 'Indefinido'"
+              ></i>
+            </td>
+            <td>
+              <i
+                class="bi bi-cloud-arrow-up-fill"
+                role="button"
+                @click="mostrarModalReactivar(modelo)"
+                v-if="modelo.ESTATUS === 'Inactivo'"
+              ></i>
+            </td>
+          </tr>
+          <tr
+            v-for="anio in catalogData"
+            :key="anio.ID"
+            v-if="activeTab === 'Años'"
+          >
+            <td>{{ anio.ID }}</td>
+            <td>{{ anio.DESCRIPCION }}</td>
+            <td>
+              <i
+                class="bi bi-pencil"
+                role="button"
+                @click="editarCatalogo(anio)"
+              ></i>
+            </td>
+            <td>
+              <i
+                class="bi bi-trash"
+                role="button"
+                @click="mostrarModalEliminar(anio)"
+                v-if="anio.ESTATUS === 'Activo'|anio.ESTATUS === 'Indefinido'"
+              ></i>
+            </td>
+            <td>
+              <i
+                class="bi bi-cloud-arrow-up-fill"
+                role="button"
+                @click="mostrarModalReactivar(anio)"
+                v-if="anio.ESTATUS === 'Inactivo'"
+              ></i>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="exampleModal"
+  tabindex="-1"
+  aria-labelledby="exampleModalLabel"
+  aria-hidden="true"
+  ref="myModal"
+  @show="resetNuevoCatalogo"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">
+          {{ catalogoSeleccionado ? 'Editar Catálogo' : 'Agregar Catálogo' }}
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="descripcion" class="form-label">Descripcion</label>
+          <input
+            type="text"
+            class="form-control"
+            id="descripcion"
+            v-model="nuevoCatalogo.DESCRIPCION"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cerrar
+        </button>
+        <button
+          v-if="!catalogoSeleccionado"
+          type="button"
+          class="btn btn-primary"
+          @click="guardarCatalogo"
+        >
+          Guardar
+        </button>
+        <button
+          v-else
+          type="button"
+          class="btn btn-primary"
+          @click="guardarCambios"
+        >
+          Guardar Cambios
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="confirmarReactivacionModal"
+  tabindex="-1"
+  aria-labelledby="confirmarReactivacionModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmarReactivacionModalLabel">
+          Confirmar Reactivación
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro de querer reactivar el catálogo {{ catalogoSeleccionado ?
+        catalogoSeleccionado.DESCRIPCION + " con ID: " + catalogoSeleccionado.ID
+        : '' }}?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          @click="reactivarCatalogoConfirmado"
+        >
+          Reactivar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="confirmarEliminacionModal"
+  tabindex="-1"
+  aria-labelledby="confirmarEliminacionModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmarEliminacionModalLabel">
+          Confirmar Eliminación
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        ¿Está seguro que desea eliminar el catálogo {{ catalogoSeleccionado ?
+        catalogoSeleccionado.DESCRIPCION + " con ID: " + catalogoSeleccionado.ID
+        : '' }}?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          @click="eliminarCatalogoConfirmado"
+        >
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  v-if="showAlert"
+  :class="[alertClass, 'position-fixed', 'top-0', 'start-50', 'translate-middle-x', 'z-index-1000', 'w-300', 'custom-mt', 'text-center', 'rounded-3']"
+  role="alert"
+>
+  {{ alertMessage }}
+</div>

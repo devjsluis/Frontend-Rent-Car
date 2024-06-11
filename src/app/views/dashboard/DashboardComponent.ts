@@ -6,6 +6,7 @@ import ClientesComponent from "./../../components/clientes-component/ClientesCom
 import UsuariosComponent from "../../components/usuarios-component/UsuariosComponent.vue";
 import PrincipalComponent from "../../components/principal-component/PrincipalComponent.vue";
 import RegistroComponent from "../../components/registro-component/RegistroComponent.vue";
+import CatalogoComponent from "../../components/catalogo-component/CatalogoComponent.vue";
 import { jwtDecode } from "jwt-decode";
 
 interface DashboardComponentData {
@@ -17,6 +18,7 @@ interface DashboardComponentData {
   clientesData: Cliente[];
   usuariosData: Usuario[];
   registerData: Register[];
+  catalogData: Catalog[];
   idUser: string;
   userName: string;
 }
@@ -62,6 +64,13 @@ interface Register {
   ESTATUS: number | string;
 }
 
+interface Catalog {
+  ID: number;
+  DESCRIPCION: string;
+  ID_CATALOGO: number;
+  ESTATUS: string | number;
+}
+
 export default defineComponent({
   name: "DashboardComponent",
   components: {
@@ -69,6 +78,7 @@ export default defineComponent({
     UsuariosComponent,
     PrincipalComponent,
     RegistroComponent,
+    CatalogoComponent,
   },
   data(): DashboardComponentData {
     return {
@@ -85,10 +95,12 @@ export default defineComponent({
         { icon: "bi bi-person-fill mx-1", label: "Clientes", active: false },
         { icon: "bi bi-people mx-1", label: "Usuarios", active: false },
         { icon: "bi bi-pencil mx-1", label: "Registro", active: false },
+        { icon: "bi bi-book mx-1", label: "Catálogos", active: false },
       ] as ListItem[],
       clientesData: [],
       usuariosData: [],
       registerData: [],
+      catalogData: [],
       idUser: "",
       userName: "",
     };
@@ -112,6 +124,11 @@ export default defineComponent({
     isRegisterActive() {
       return this.items.some(
         (item) => item.label === "Registro" && item.active
+      );
+    },
+    isCatalogActive() {
+      return this.items.some(
+        (item) => item.label === "Catálogos" && item.active
       );
     },
   },
