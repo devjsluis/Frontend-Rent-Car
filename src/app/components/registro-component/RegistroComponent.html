@@ -92,7 +92,7 @@
   ref="myModal"
   @show="resetNuevoRegistro"
 >
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">
@@ -105,140 +105,177 @@
           aria-label="Close"
         ></button>
       </div>
-      <div class="modal-body row">
-        <div class="mb-3 col-6">
-          <label for="idCliente" class="form-label">Cliente</label>
-          <select
-            class="form-select"
-            id="idCliente"
-            v-model="newRegister.ID_CLIENTE"
-            required
-          >
-            <option :value="null" disabled>Selecciona un cliente</option>
-            <option v-for="cliente in clientesData" :value="cliente.ID">
-              {{ cliente.APELLIDOS }}, {{ cliente.NOMBRE }}
-            </option>
-          </select>
-        </div>
+      <form class="form needs-validation" novalidate>
+        <div class="modal-body row">
+          <div class="mb-3 col-6 position-relative">
+            <label for="idCliente" class="form-label">Cliente</label>
+            <select
+              class="form-select"
+              id="idCliente"
+              v-model="newRegister.ID_CLIENTE"
+              required
+            >
+              <option :value="null" disabled>Selecciona un cliente</option>
+              <option v-for="cliente in clientesData" :value="cliente.ID">
+                {{ cliente.APELLIDOS }}, {{ cliente.NOMBRE }}
+              </option>
+            </select>
+            <div class="invalid-tooltip fw-bolder">
+              Por favor seleccione un cliente
+            </div>
+          </div>
 
-        <div class="mb-3 col-6">
-          <label for="idVehiculo" class="form-label">Vehículo</label>
-          <select
-            class="form-select"
-            id="idVehiculo"
-            v-model="newRegister.ID_VEHICULO"
-            required
-          >
-            <option :value="null" disabled>Selecciona un vehículo</option>
-            <option v-for="vehiculo in vehiclesData" :value="vehiculo.ID">
-              {{ vehiculo.MARCA + " " + vehiculo.MODELO + " " + vehiculo.ANIO }}
-            </option>
-          </select>
-        </div>
+          <div class="mb-3 col-6 position-relative">
+            <label for="idVehiculo" class="form-label">Vehículo</label>
+            <select
+              class="form-select"
+              id="idVehiculo"
+              v-model="newRegister.ID_VEHICULO"
+              required
+            >
+              <option :value="null" disabled>Selecciona un vehículo</option>
+              <option v-for="vehiculo in vehiclesData" :value="vehiculo.ID">
+                {{ vehiculo.MARCA + " " + vehiculo.MODELO + " " + vehiculo.ANIO
+                }}
+              </option>
+            </select>
+            <div class="invalid-tooltip fw-bolder">
+              Por favor seleccione un vehículo
+            </div>
+          </div>
 
-        <div class="mb-3 col-6">
-          <label for="fechaRenta" class="form-label">Fecha de Renta</label>
-          <input
-            type="date"
-            class="form-control"
-            id="fechaRenta"
-            v-model="newRegister.FECHA_RENTA"
-            required
-          />
-        </div>
-        <div class="mb-3 col-6">
-          <label for="fechaEntrega" class="form-label">Fecha de Entrega</label>
-          <input
-            type="date"
-            class="form-control"
-            id="fechaEntrega"
-            v-model="newRegister.FECHA_ENTREGA"
-            required
-          />
-        </div>
-        <div class="mb-3 col-6">
-          <label for="fechaRetorno" class="form-label">Fecha de Retorno</label>
-          <input
-            type="date"
-            class="form-control"
-            id="fechaRetorno"
-            v-model="newRegister.FECHA_RETORNO"
-            required
-          />
-        </div>
-        <div class="mb-3 col-6">
-          <label for="costoTotal" class="form-label">Costo total</label>
-          <div class="input-group mb-3">
-            <span class="input-group-text">$</span>
+          <div class="mb-3 col-6 position-relative">
+            <label for="fechaRenta" class="form-label">Fecha de Renta</label>
+            <input
+              type="date"
+              class="form-control"
+              id="fechaRenta"
+              v-model="newRegister.FECHA_RENTA"
+              required
+            />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese una fecha válida
+            </div>
+          </div>
+          <div class="mb-3 col-6 position-relative">
+            <label for="fechaEntrega" class="form-label"
+              >Fecha de Entrega</label
+            >
+            <input
+              type="date"
+              class="form-control"
+              id="fechaEntrega"
+              v-model="newRegister.FECHA_ENTREGA"
+              required
+            />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese una fecha válida
+            </div>
+          </div>
+          <div class="mb-3 col-6 position-relative">
+            <label for="fechaRetorno" class="form-label"
+              >Fecha de Retorno</label
+            >
+            <input
+              type="date"
+              class="form-control"
+              id="fechaRetorno"
+              v-model="newRegister.FECHA_RETORNO"
+              required
+            />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese una fecha válida
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="costoTotal" class="form-label">Costo total</label>
+            <div class="row ps-2 pe-2">
+              <button class="span col-1">$</button>
+              <input
+                type="number"
+                class="form-control col"
+                id="costoTotal"
+                v-model="newRegister.COSTO_TOTAL"
+                required
+                min="0"
+              />
+              <br />
+              <div class="invalid-tooltip fw-bolder col-12">
+                Por favor ingrese un costo válido
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="kilometrajeInicial" class="form-label"
+              >Kilometraje Inicial</label
+            >
             <input
               type="number"
               class="form-control"
-              id="costoTotal"
-              v-model="newRegister.COSTO_TOTAL"
+              id="kilometrajeInicial"
+              v-model="newRegister.KILOMETRAJE_INICIAL"
               required
               min="0"
             />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese un kilometraje válido
+            </div>
+          </div>
+          <div class="mb-3 col-6 position-relative">
+            <label for="kilometrajeFinal" class="form-label"
+              >Kilometraje Final</label
+            >
+            <input
+              type="number"
+              class="form-control"
+              id="kilometrajeFinal"
+              v-model="newRegister.KILOMETRAJE_FINAL"
+              required
+              min="0"
+            />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese un kilometraje válido
+            </div>
+          </div>
+          <div class="mb-3 position-relative">
+            <label for="destinoViaje" class="form-label"
+              >Destino de viaje</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="destinoViaje"
+              v-model="newRegister.DESTINO_DE_VIAJE"
+              required
+            />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese un destino válido
+            </div>
           </div>
         </div>
-        <div class="mb-3 col-6">
-          <label for="kilometrajeInicial" class="form-label"
-            >Kilometraje Inicial</label
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            type="button"
+            data-bs-dismiss="modal"
+            aria-label="Close"
           >
-          <input
-            type="number"
-            class="form-control"
-            id="kilometrajeInicial"
-            v-model="newRegister.KILOMETRAJE_INICIAL"
-            required
-            min="0"
-          />
-        </div>
-        <div class="mb-3 col-6">
-          <label for="kilometrajeFinal" class="form-label"
-            >Kilometraje Final</label
+            Cerrar
+          </button>
+          <button
+            v-if="!registerSelected"
+            type="submit"
+            class="btn btn-primary"
           >
-          <input
-            type="number"
-            class="form-control"
-            id="kilometrajeFinal"
-            v-model="newRegister.KILOMETRAJE_FINAL"
-            required
-            min="0"
-          />
+            Guardar
+          </button>
+          <button v-else type="submit" class="btn btn-primary">
+            Guardar Cambios
+          </button>
         </div>
-        <div class="mb-3">
-          <label for="destinoViaje" class="form-label">Destino de viaje</label>
-          <input
-            type="text"
-            class="form-control"
-            id="destinoViaje"
-            v-model="newRegister.DESTINO_DE_VIAJE"
-            required
-          />
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          Cerrar
-        </button>
-        <button
-          v-if="!registerSelected"
-          type="button"
-          class="btn btn-primary"
-          @click="saveRegister"
-        >
-          Guardar
-        </button>
-        <button
-          v-else
-          type="button"
-          class="btn btn-primary"
-          @click="guardarCambios"
-        >
-          Guardar Cambios
-        </button>
-      </div>
+      </form>
     </div>
   </div>
 </div>

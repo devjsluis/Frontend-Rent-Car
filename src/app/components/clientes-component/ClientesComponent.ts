@@ -15,6 +15,7 @@ interface ClientesComponentData {
   showAlert: boolean;
   alertMessage: string;
   alertClass: string;
+  modoEdicion: boolean;
 }
 
 interface Cliente {
@@ -60,9 +61,18 @@ export default defineComponent({
       showAlert: false,
       alertMessage: "",
       alertClass: "",
+      modoEdicion: false,
     };
   },
   methods: {
+    resetValidation() {
+      const form = document.querySelector(
+        ".form-login"
+      ) as HTMLFormElement | null;
+      if (form) {
+        form.classList.remove("was-validated");
+      }
+    },
     mostrarAlerta(mensaje: string, estilo: string) {
       this.showAlert = true;
       this.alertMessage = mensaje;
@@ -82,6 +92,11 @@ export default defineComponent({
         ID_USUARIO_ALTA: 0,
       };
       this.clienteSeleccionado = null;
+      this.modoEdicion = false;
+      if (this.modal) {
+        this.modal.hide(); // Ocultar el modal si está abierto
+      }
+      this.resetValidation();
     },
     initModal() {
       const modalElement = document.getElementById("exampleModal");
@@ -129,54 +144,102 @@ export default defineComponent({
     },
     async guardarCliente() {
       try {
+        const form = document.querySelector(
+          ".form-login"
+        ) as HTMLFormElement | null;
+
+        if (form) {
+          const nombreInput = form.querySelector("#nombre") as HTMLInputElement;
+          const apellidosInput = form.querySelector(
+            "#apellidos"
+          ) as HTMLInputElement;
+          const fechaNacimientoInput = form.querySelector(
+            "#fechaNacimiento"
+          ) as HTMLInputElement;
+          const telefonoInput = form.querySelector(
+            "#telefono"
+          ) as HTMLInputElement;
+          const correoInput = form.querySelector("#correo") as HTMLInputElement;
+
+          if (
+            !nombreInput ||
+            !apellidosInput ||
+            !fechaNacimientoInput ||
+            !telefonoInput ||
+            !correoInput
+          ) {
+            console.error("No se pudieron encontrar los campos.");
+            return;
+          }
+
+          const nombre = nombreInput.value;
+          const apellidos = apellidosInput.value;
+          const fechaNacimiento = fechaNacimientoInput.value;
+          const telefono = telefonoInput.value;
+          const correo = correoInput.value;
+
+          if (
+            !nombre ||
+            !apellidos ||
+            !fechaNacimiento ||
+            !telefono ||
+            !correo
+          ) {
+            console.error("Por favor, ingrese datos válidos.");
+            return;
+          }
+        }
+
         const token = localStorage.getItem("token");
         if (token !== null) {
           const decodedToken: any = jwtDecode(token);
           if (decodedToken && decodedToken.id) {
             this.idUser = decodedToken.id;
             this.nuevoCliente.ID_USUARIO_ALTA = this.idUser;
+
+            const response = await axios.post(
+              `${import.meta.env.VITE_APP_API_URL}/clientes/create`,
+              this.nuevoCliente
+            );
+            if (response.status === 201) {
+              this.mostrarAlerta(
+                "Cliente creado satisfactoriamente",
+                "alert alert-success"
+              );
+              if (this.modal) {
+                this.modal.hide();
+                this.resetModal();
+                const modalBackdrop = document.querySelector(".modal-backdrop");
+                if (modalBackdrop) {
+                  modalBackdrop.parentNode?.removeChild(modalBackdrop);
+                }
+              } else {
+                console.log("El modal no está inicializado correctamente");
+              }
+
+              this.nuevoCliente = {
+                NOMBRE: "",
+                APELLIDOS: "",
+                FECHA_NACIMIENTO: "",
+                TELEFONO: "",
+                CORREO: "",
+                ESTATUS: 1,
+                ID_USUARIO_ALTA: 0,
+              };
+              this.cargarClientes();
+            } else {
+              console.error("Error al crear el cliente:", response.statusText);
+            }
           } else {
             console.error("Token JWT no contiene información de usuario");
           }
-        }
-        const response = await axios.post(
-          `${import.meta.env.VITE_APP_API_URL}/clientes/create`,
-          this.nuevoCliente
-        );
-        if (response.status === 201) {
-          this.mostrarAlerta(
-            "Cliente creado satisfactoriamente",
-            "alert alert-success"
-          );
-          if (this.modal) {
-            this.modal.hide();
-            this.resetModal();
-            const modalBackdrop = document.querySelector(".modal-backdrop"); // Seleccionar el elemento con la clase 'modal-backdrop'
-            if (modalBackdrop) {
-              modalBackdrop.parentNode?.removeChild(modalBackdrop); // Eliminar el elemento del DOM
-            }
-          } else {
-            console.log("El modal no está inicializado correctamente");
-          }
-
-          this.nuevoCliente = {
-            NOMBRE: "",
-            APELLIDOS: "",
-            FECHA_NACIMIENTO: "",
-            TELEFONO: "",
-            CORREO: "",
-            ESTATUS: 1,
-            ID_USUARIO_ALTA: 0,
-          };
-          this.cargarClientes();
-        } else {
-          console.error("Error al crear el cliente:", response.statusText);
         }
       } catch (error) {
         console.error("Error al guardar el cliente:", error);
       }
     },
     async editarCliente(cliente: Cliente) {
+      this.modoEdicion = true;
       try {
         this.clienteSeleccionado = cliente; // Guarda el cliente seleccionado para edición
         const modalElement = document.getElementById(
@@ -194,6 +257,10 @@ export default defineComponent({
             ESTATUS: cliente.ESTATUS,
             ID_USUARIO_ALTA: cliente.ID_USUARIO_ALTA,
           };
+          modalElement.addEventListener("hidden.bs.modal", () => {
+            // Resetear los datos cuando se cierra el modal
+            this.resetModal();
+          });
         } else {
           console.error("Elemento modal no encontrado.");
         }
@@ -203,6 +270,52 @@ export default defineComponent({
     },
     async guardarCambios() {
       try {
+        const form = document.querySelector(
+          ".form-login"
+        ) as HTMLFormElement | null;
+
+        if (form) {
+          const nombreInput = form.querySelector("#nombre") as HTMLInputElement;
+          const apellidosInput = form.querySelector(
+            "#apellidos"
+          ) as HTMLInputElement;
+          const fechaNacimientoInput = form.querySelector(
+            "#fechaNacimiento"
+          ) as HTMLInputElement;
+          const telefonoInput = form.querySelector(
+            "#telefono"
+          ) as HTMLInputElement;
+          const correoInput = form.querySelector("#correo") as HTMLInputElement;
+
+          if (
+            !nombreInput ||
+            !apellidosInput ||
+            !fechaNacimientoInput ||
+            !telefonoInput ||
+            !correoInput
+          ) {
+            console.error("No se pudieron encontrar los campos.");
+            return;
+          }
+
+          const nombre = nombreInput.value;
+          const apellidos = apellidosInput.value;
+          const fechaNacimiento = fechaNacimientoInput.value;
+          const telefono = telefonoInput.value;
+          const correo = correoInput.value;
+
+          if (
+            !nombre ||
+            !apellidos ||
+            !fechaNacimiento ||
+            !telefono ||
+            !correo
+          ) {
+            console.error("Por favor, ingrese datos válidos.");
+            return;
+          }
+        }
+
         if (this.clienteSeleccionado) {
           if (this.nuevoCliente.ESTATUS === "Activo") {
             this.nuevoCliente.ESTATUS = 1;
@@ -224,16 +337,7 @@ export default defineComponent({
               "alert alert-success"
             );
             this.modal.hide();
-            this.clienteSeleccionado = null;
-            this.nuevoCliente = {
-              NOMBRE: "",
-              APELLIDOS: "",
-              FECHA_NACIMIENTO: "",
-              TELEFONO: "",
-              CORREO: "",
-              ESTATUS: 1,
-              ID_USUARIO_ALTA: 0,
-            };
+            this.resetModal();
             this.cargarClientes();
           } else {
             console.error("Error al editar el cliente:", response.statusText);
@@ -273,7 +377,7 @@ export default defineComponent({
               "alert alert-success"
             );
             this.modalEliminar.hide();
-            this.clienteSeleccionado = null;
+            this.resetModal();
             this.cargarClientes();
           } else {
             console.error("Error al eliminar el cliente:", response.statusText);
@@ -285,7 +389,6 @@ export default defineComponent({
         console.error("Error al eliminar el cliente:", error);
       }
     },
-
     mostrarModalReactivar(cliente: Cliente) {
       this.clienteSeleccionado = cliente; // Establecer el cliente seleccionado para reactivar
       const confirmarReactivacionModal = document.getElementById(
@@ -300,7 +403,6 @@ export default defineComponent({
         );
       }
     },
-
     async reactivarClienteConfirmado() {
       try {
         if (this.clienteSeleccionado) {
@@ -315,7 +417,7 @@ export default defineComponent({
               "alert alert-success"
             );
             this.modalReactivar.hide();
-            this.clienteSeleccionado = null;
+            this.resetModal();
             this.cargarClientes();
           } else {
             console.error(
@@ -330,8 +432,41 @@ export default defineComponent({
         console.error("Error al reactivar el cliente:", error);
       }
     },
+    async manejarGuardarCliente() {
+      if (this.modoEdicion) {
+        await this.guardarCambios();
+      } else {
+        await this.guardarCliente();
+      }
+    },
   },
   mounted() {
     this.cargarClientes();
+
+    // Asociar evento submit una sola vez
+    const form = document.querySelector(
+      ".form-login"
+    ) as HTMLFormElement | null;
+    if (form) {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (!form.checkValidity()) {
+          form.classList.add("was-validated");
+          return;
+        }
+
+        this.manejarGuardarCliente();
+      });
+    }
   },
+  // watch: {
+  //   modoEdicion(newClienteId, oldClienteId) {
+  //     if (newClienteId !== oldClienteId) {
+  //       console.log("El ID del cliente ha cambiado:", newClienteId);
+  //       // Aquí puedes agregar la lógica que necesites al cambiar el cliente seleccionado
+  //     }
+  //   },
+  // },
 });

@@ -18,6 +18,7 @@ interface RegisterComponentData {
   showAlert: boolean;
   alertMessage: string;
   alertClass: string;
+  modoEdicion: boolean;
 }
 
 interface Register {
@@ -100,9 +101,16 @@ export default defineComponent({
         DESTINO_DE_VIAJE: "",
         ESTATUS: 1,
       } as NewRegister,
+      modoEdicion: false,
     };
   },
   methods: {
+    resetValidation() {
+      const form = document.querySelector(".form") as HTMLFormElement | null;
+      if (form) {
+        form.classList.remove("was-validated");
+      }
+    },
     mostrarAlerta(mensaje: string, estilo: string) {
       this.showAlert = true;
       this.alertMessage = mensaje;
@@ -125,6 +133,11 @@ export default defineComponent({
         ESTATUS: 1,
       };
       this.registerSelected = null;
+      this.modoEdicion = false;
+      if (this.modal) {
+        this.modal.hide(); // Ocultar el modal si está abierto
+      }
+      this.resetValidation();
     },
     initModal() {
       const modalElement = document.getElementById("exampleModal");
@@ -248,6 +261,77 @@ export default defineComponent({
 
     async saveRegister() {
       try {
+        const form = document.querySelector(".form") as HTMLFormElement | null;
+
+        if (form) {
+          const idClienteSelect = form.querySelector(
+            "#idCliente"
+          ) as HTMLSelectElement;
+          const idVehiculoSelect = form.querySelector(
+            "#idVehiculo"
+          ) as HTMLSelectElement;
+          const fechaRentaInput = form.querySelector(
+            "#fechaRenta"
+          ) as HTMLInputElement;
+          const fechaEntregaInput = form.querySelector(
+            "#fechaEntrega"
+          ) as HTMLInputElement;
+          const fechaRetornoInput = form.querySelector(
+            "#fechaRetorno"
+          ) as HTMLInputElement;
+          const costoTotalInput = form.querySelector(
+            "#costoTotal"
+          ) as HTMLInputElement;
+          const kilometrajeInicialInput = form.querySelector(
+            "#kilometrajeInicial"
+          ) as HTMLInputElement;
+          const kilometrajeFinalInput = form.querySelector(
+            "#kilometrajeFinal"
+          ) as HTMLInputElement;
+          const destinoViajeInput = form.querySelector(
+            "#destinoViaje"
+          ) as HTMLInputElement;
+
+          if (
+            !idClienteSelect ||
+            !idVehiculoSelect ||
+            !fechaRentaInput ||
+            !fechaEntregaInput ||
+            !fechaRetornoInput ||
+            !costoTotalInput ||
+            !kilometrajeInicialInput ||
+            !kilometrajeFinalInput ||
+            !destinoViajeInput
+          ) {
+            console.error("No se pudieron encontrar los campos.");
+            return;
+          }
+
+          const idCliente = idClienteSelect.value;
+          const idVehiculo = idVehiculoSelect.value;
+          const fechaRenta = fechaRentaInput.value;
+          const fechaEntrega = fechaEntregaInput.value;
+          const fechaRetorno = fechaRetornoInput.value;
+          const costoTotal = costoTotalInput.value;
+          const kilometrajeInicial = kilometrajeInicialInput.value;
+          const kilometrajeFinal = kilometrajeFinalInput.value;
+          const destinoViaje = destinoViajeInput.value;
+
+          if (
+            !idCliente ||
+            !idVehiculo ||
+            !fechaRenta ||
+            !fechaEntrega ||
+            !fechaRetorno ||
+            !costoTotal ||
+            !kilometrajeInicial ||
+            !kilometrajeFinal ||
+            !destinoViaje
+          ) {
+            console.error("Por favor, ingrese datos válidos.");
+            return;
+          }
+        }
         const token = localStorage.getItem("token");
         if (token !== null) {
           const decodedToken: any = jwtDecode(token);
@@ -300,6 +384,7 @@ export default defineComponent({
     },
 
     async editRegister(register: Register) {
+      this.modoEdicion = true;
       try {
         this.registerSelected = register; // Guarda el registro seleccionado para edición
 
@@ -333,6 +418,10 @@ export default defineComponent({
             DESTINO_DE_VIAJE: register.DESTINO_DE_VIAJE,
             ESTATUS: register.ESTATUS,
           };
+          modalElement.addEventListener("hidden.bs.modal", () => {
+            // Resetear los datos cuando se cierra el modal
+            this.resetModal();
+          });
         } else {
           console.error("Elemento modal no encontrado.");
         }
@@ -342,6 +431,77 @@ export default defineComponent({
     },
     async guardarCambios() {
       try {
+        const form = document.querySelector(".form") as HTMLFormElement | null;
+
+        if (form) {
+          const idClienteSelect = form.querySelector(
+            "#idCliente"
+          ) as HTMLSelectElement;
+          const idVehiculoSelect = form.querySelector(
+            "#idVehiculo"
+          ) as HTMLSelectElement;
+          const fechaRentaInput = form.querySelector(
+            "#fechaRenta"
+          ) as HTMLInputElement;
+          const fechaEntregaInput = form.querySelector(
+            "#fechaEntrega"
+          ) as HTMLInputElement;
+          const fechaRetornoInput = form.querySelector(
+            "#fechaRetorno"
+          ) as HTMLInputElement;
+          const costoTotalInput = form.querySelector(
+            "#costoTotal"
+          ) as HTMLInputElement;
+          const kilometrajeInicialInput = form.querySelector(
+            "#kilometrajeInicial"
+          ) as HTMLInputElement;
+          const kilometrajeFinalInput = form.querySelector(
+            "#kilometrajeFinal"
+          ) as HTMLInputElement;
+          const destinoViajeInput = form.querySelector(
+            "#destinoViaje"
+          ) as HTMLInputElement;
+
+          if (
+            !idClienteSelect ||
+            !idVehiculoSelect ||
+            !fechaRentaInput ||
+            !fechaEntregaInput ||
+            !fechaRetornoInput ||
+            !costoTotalInput ||
+            !kilometrajeInicialInput ||
+            !kilometrajeFinalInput ||
+            !destinoViajeInput
+          ) {
+            console.error("No se pudieron encontrar los campos.");
+            return;
+          }
+
+          const idCliente = idClienteSelect.value;
+          const idVehiculo = idVehiculoSelect.value;
+          const fechaRenta = fechaRentaInput.value;
+          const fechaEntrega = fechaEntregaInput.value;
+          const fechaRetorno = fechaRetornoInput.value;
+          const costoTotal = costoTotalInput.value;
+          const kilometrajeInicial = kilometrajeInicialInput.value;
+          const kilometrajeFinal = kilometrajeFinalInput.value;
+          const destinoViaje = destinoViajeInput.value;
+
+          if (
+            !idCliente ||
+            !idVehiculo ||
+            !fechaRenta ||
+            !fechaEntrega ||
+            !fechaRetorno ||
+            !costoTotal ||
+            !kilometrajeInicial ||
+            !kilometrajeFinal ||
+            !destinoViaje
+          ) {
+            console.error("Por favor, ingrese datos válidos.");
+            return;
+          }
+        }
         if (this.clienteSeleccionado) {
           if (this.newRegister.ESTATUS === "Activo") {
             this.newRegister.ESTATUS = 1;
@@ -366,19 +526,7 @@ export default defineComponent({
                 "alert alert-success"
               );
               this.modal.hide();
-              this.registerSelected = null;
-              this.newRegister = {
-                ID_CLIENTE: 0,
-                ID_VEHICULO: 0,
-                FECHA_RENTA: "",
-                FECHA_ENTREGA: "",
-                FECHA_RETORNO: "",
-                COSTO_TOTAL: 0,
-                KILOMETRAJE_INICIAL: 0,
-                KILOMETRAJE_FINAL: 0,
-                DESTINO_DE_VIAJE: "",
-                ESTATUS: 1,
-              };
+              this.resetModal();
               this.cargarRegisterRent();
             } else {
               console.error(
@@ -424,7 +572,7 @@ export default defineComponent({
               "alert alert-success"
             );
             this.modalEliminar.hide();
-            this.registerSelected = null;
+            this.resetModal();
             this.cargarRegisterRent();
           } else {
             console.error(
@@ -469,7 +617,7 @@ export default defineComponent({
               "alert alert-success"
             );
             this.modalReactivar.hide();
-            this.registerSelected = null;
+            this.resetModal();
             this.cargarRegisterRent();
           } else {
             console.error(
@@ -484,6 +632,13 @@ export default defineComponent({
         console.error("Error al reactivar el registro:", error);
       }
     },
+    async manejarGuardarRegistro() {
+      if (this.modoEdicion) {
+        await this.guardarCambios();
+      } else {
+        await this.saveRegister();
+      }
+    },
   },
   // watch: {
   //   "newRegister.ID_CLIENTE"(newClienteId, oldClienteId) {
@@ -495,5 +650,21 @@ export default defineComponent({
   // },
   mounted() {
     this.cargarRegisterRent();
+
+    // Asociar evento submit una sola vez
+    const form = document.querySelector(".form") as HTMLFormElement | null;
+    if (form) {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (!form.checkValidity()) {
+          form.classList.add("was-validated");
+          return;
+        }
+
+        this.manejarGuardarRegistro();
+      });
+    }
   },
 });

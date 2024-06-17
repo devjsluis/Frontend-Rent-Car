@@ -221,40 +221,43 @@
           aria-label="Close"
         ></button>
       </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label for="descripcion" class="form-label">Descripcion</label>
-          <input
-            type="text"
-            class="form-control"
-            id="descripcion"
-            v-model="nuevoCatalogo.DESCRIPCION"
-            required
-          />
+      <form class="form needs-validation" novalidate>
+        <div class="modal-body">
+          <div class="mb-3 position-relative">
+            <label for="descripcion" class="form-label">Descripcion</label>
+            <input
+              type="text"
+              class="form-control"
+              id="descripcion"
+              v-model="nuevoCatalogo.DESCRIPCION"
+              required
+            />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese una descripción válida
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          Cerrar
-        </button>
-        <button
-          v-if="!catalogoSeleccionado"
-          type="button"
-          class="btn btn-primary"
-          @click="guardarCatalogo"
-        >
-          Guardar
-        </button>
-        <button
-          v-else
-          type="button"
-          class="btn btn-primary"
-          @click="guardarCambios"
-        >
-          Guardar Cambios
-        </button>
-      </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            type="button"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          >
+            Cerrar
+          </button>
+          <button
+            v-if="!catalogoSeleccionado"
+            type="submit"
+            class="btn btn-primary"
+          >
+            Guardar
+          </button>
+          <button v-else type="submit" class="btn btn-primary">
+            Guardar Cambios
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

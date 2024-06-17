@@ -2,7 +2,7 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col">
-        <h2 class="d-inline-block px-5 pt-3">Clientes</h2>
+        <h2 class="d-inline-block px-5 pt-3">Vehículos</h2>
       </div>
       <div class="col d-flex align-items-center justify-content-center">
         <div class="d-flex flex-grow-1"></div>
@@ -22,52 +22,46 @@
       <thead class="sticky-header">
         <tr>
           <th scope="col">ID</th>
-          <th scope="col">Nombre</th>
-          <th scope="col">Apellidos</th>
-          <th scope="col">Fecha de nacimiento</th>
-          <th scope="col">Teléfono</th>
-          <th scope="col">Correo</th>
-          <th scope="col">Estatus</th>
-          <th scope="col">Usuario Alta</th>
+          <th scope="col">Fecha de alta</th>
+          <th scope="col">Marca</th>
+          <th scope="col">Modelo</th>
+          <th scope="col">Año</th>
+          <th scope="col">Notas</th>
           <th scope="col">Editar</th>
           <th scope="col">Eliminar</th>
           <th scope="col">Restaurar</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="cliente in clientesData" :key="cliente.ID">
-          <td>{{ cliente.ID }}</td>
-          <td>{{ cliente.NOMBRE }}</td>
-          <td>{{ cliente.APELLIDOS }}</td>
-          <td>{{ cliente.FECHA_NACIMIENTO }}</td>
-          <td>{{ cliente.TELEFONO }}</td>
-          <td>{{ cliente.CORREO }}</td>
-          <td>{{ cliente.ESTATUS }}</td>
-          <td>
-            {{ cliente.NOMBRE_USUARIO_ALTA + " " +
-            cliente.APELLIDO_USUARIO_ALTA}}
-          </td>
+        <tr v-for="vehiculo in vehiclesData" :key="vehiculo.ID">
+          <td>{{ vehiculo.ID }}</td>
+          <td>{{ vehiculo.FECHA_ALTA }}</td>
+          <td>{{ vehiculo.MARCA }}</td>
+          <td>{{ vehiculo.MODELO }}</td>
+          <td>{{ vehiculo.ANIO }}</td>
+          <td>{{ vehiculo.NOTAS }}</td>
+
           <td>
             <i
               class="bi bi-pencil"
               role="button"
-              @click="editarCliente(cliente)"
+              @click="editarVehiculo(vehiculo)"
             ></i>
           </td>
           <td>
             <i
               class="bi bi-trash"
               role="button"
-              @click="mostrarModalEliminar(cliente)"
-              v-if="cliente.ESTATUS === 'Activo'|cliente.ESTATUS === 'Indefinido'"
+              @click="mostrarModalEliminar(vehiculo)"
+              v-if="vehiculo.ESTATUS === 'Activo'|vehiculo.ESTATUS === 'Indefinido'"
             ></i>
           </td>
           <td>
             <i
               class="bi bi-cloud-arrow-up-fill"
               role="button"
-              @click="mostrarModalReactivar(cliente)"
-              v-if="cliente.ESTATUS === 'Inactivo'"
+              @click="mostrarModalReactivar(vehiculo)"
+              v-if="vehiculo.ESTATUS === 'Inactivo'"
             ></i>
           </td>
         </tr>
@@ -83,13 +77,13 @@
   aria-labelledby="exampleModalLabel"
   aria-hidden="true"
   ref="myModal"
-  @show="resetNuevoCliente"
+  @show="resetNuevoVehiculo"
 >
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">
-          {{ clienteSeleccionado ? 'Editar Cliente' : 'Agregar Cliente' }}
+          {{ vehicleSeleccionado ? 'Editar Vehículo' : 'Agregar Vehículo' }}
         </h5>
         <button
           type="button"
@@ -98,77 +92,88 @@
           aria-label="Close"
         ></button>
       </div>
-
-      <form class="form-login needs-validation" novalidate>
+      <form class="form needs-validation" novalidate ref="form">
         <div class="modal-body">
           <div class="mb-3 position-relative">
-            <label for="nombre" class="form-label">Nombre</label>
-            <input
-              type="text"
-              class="form-control"
-              id="nombre"
-              v-model="nuevoCliente.NOMBRE"
-              required
-            />
-            <div class="invalid-tooltip fw-bolder">
-              Por favor ingrese un nombre válido
-            </div>
-          </div>
-          <div class="mb-3 position-relative">
-            <label for="apellidos" class="form-label">Apellidos</label>
-            <input
-              type="text"
-              class="form-control"
-              id="apellidos"
-              v-model="nuevoCliente.APELLIDOS"
-              required
-            />
-            <div class="invalid-tooltip fw-bolder">
-              Por favor ingrese unos apellidos válidos
-            </div>
-          </div>
-          <div class="mb-3 position-relative">
-            <label for="fechaNacimiento" class="form-label"
-              >Fecha de Nacimiento</label
-            >
+            <label for="fechaAlta" class="form-label">Fecha de alta</label>
             <input
               type="date"
               class="form-control"
-              id="fechaNacimiento"
-              v-model="nuevoCliente.FECHA_NACIMIENTO"
+              id="fechaAlta"
+              v-model="nuevoVehicle.FECHA_ALTA"
               required
             />
             <div class="invalid-tooltip fw-bolder">
-              Por favor ingrese una fecha de nacimiento válida
+              Por favor ingrese una fecha válida
             </div>
           </div>
           <div class="mb-3 position-relative">
-            <label for="telefono" class="form-label">Teléfono</label>
-            <input
-              type="tel"
-              class="form-control"
-              id="telefono"
-              v-model="nuevoCliente.TELEFONO"
+            <label for="idTipo" class="form-label">Tipo de Vehículo</label>
+            <select
+              class="form-select"
+              id="idTipo"
+              v-model="nuevoVehicle.ID_TIPO_VEHICULO"
               required
-            />
-            <div class="invalid-tooltip fw-bolder">
-              Por favor ingrese un teléfono válido
-            </div>
+            >
+              <option value="" disabled>Selecciona un tipo de vehículo</option>
+              <option v-for="tipo in tipoVehiculoData" :value="tipo.ID">
+                {{ tipo.DESCRIPCION }}
+              </option>
+            </select>
           </div>
           <div class="mb-3 position-relative">
-            <label for="correo" class="form-label">Correo Electrónico</label>
-            <input
-              type="email"
-              class="form-control"
-              id="correo"
-              v-model="nuevoCliente.CORREO"
+            <label for="marca" class="form-label">Marca</label>
+            <select
+              class="form-select"
+              id="marca"
+              v-model="nuevoVehicle.ID_MARCA"
               required
+            >
+              <option value="" disabled>Selecciona una marca</option>
+              <option v-for="marca in marcasData" :value="marca.ID">
+                {{ marca.DESCRIPCION }}
+              </option>
+            </select>
+          </div>
+          <div class="mb-3 position-relative">
+            <label for="modelo" class="form-label">Modelo</label>
+            <select
+              class="form-select"
+              id="modelo"
+              v-model="nuevoVehicle.ID_MODELO"
+              required
+            >
+              <option value="" disabled>Selecciona un modelo</option>
+              <option v-for="modelo in modelosData" :value="modelo.ID">
+                {{ modelo.DESCRIPCION }}
+              </option>
+            </select>
+          </div>
+          <div class="mb-3 position-relative">
+            <label for="anio" class="form-label">Año</label>
+            <select
+              class="form-select"
+              id="anio"
+              v-model="nuevoVehicle.ID_ANIO"
+              required
+            >
+              <option value="" disabled>Selecciona un año</option>
+              <option v-for="anio in aniosData" :value="anio.ID">
+                {{ anio.DESCRIPCION }}
+              </option>
+            </select>
+          </div>
+          <div class="mb-3 position-relative">
+            <label for="notas" class="form-label">Notas</label>
+            <input
+              type="text"
+              class="form-control"
+              id="notas"
+              v-model="nuevoVehicle.NOTAS"
             />
-            <div class="invalid-tooltip fw-bolder">
-              Por favor ingrese un correo válido
-            </div>
           </div>
         </div>
+
         <div class="modal-footer">
           <button
             class="btn btn-secondary"
@@ -179,7 +184,7 @@
             Cerrar
           </button>
           <button
-            v-if="!clienteSeleccionado"
+            v-if="!vehicleSeleccionado"
             type="submit"
             class="btn btn-primary"
           >
@@ -215,9 +220,9 @@
         ></button>
       </div>
       <div class="modal-body">
-        ¿Estás seguro de querer reactivar al cliente {{ clienteSeleccionado ?
-        clienteSeleccionado.NOMBRE + " " + clienteSeleccionado.APELLIDOS : ''
-        }}?
+        ¿Está seguro que desea reactivar el vehículo {{ vehicleSeleccionado ?
+        `${vehicleSeleccionado.MARCA} ${vehicleSeleccionado.MODELO}
+        ${vehicleSeleccionado.ANIO} con ID ${vehicleSeleccionado.ID}`: '' }}?
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -226,7 +231,7 @@
         <button
           type="button"
           class="btn btn-success"
-          @click="reactivarClienteConfirmado"
+          @click="reactivarVehiculoConfirmado"
         >
           Reactivar
         </button>
@@ -256,9 +261,9 @@
         ></button>
       </div>
       <div class="modal-body">
-        ¿Está seguro que desea eliminar al cliente {{ clienteSeleccionado ?
-        clienteSeleccionado.NOMBRE + " " + clienteSeleccionado.APELLIDOS : ''
-        }}?
+        ¿Está seguro que desea eliminar el vehículo {{ vehicleSeleccionado ?
+        `${vehicleSeleccionado.MARCA} ${vehicleSeleccionado.MODELO}
+        ${vehicleSeleccionado.ANIO} con ID ${vehicleSeleccionado.ID}`: '' }}?
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -267,7 +272,7 @@
         <button
           type="button"
           class="btn btn-danger"
-          @click="eliminarClienteConfirmado"
+          @click="eliminarVehiculoConfirmado"
         >
           Eliminar
         </button>

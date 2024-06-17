@@ -7,6 +7,7 @@ import UsuariosComponent from "../../components/usuarios-component/UsuariosCompo
 import PrincipalComponent from "../../components/principal-component/PrincipalComponent.vue";
 import RegistroComponent from "../../components/registro-component/RegistroComponent.vue";
 import CatalogoComponent from "../../components/catalogo-component/CatalogoComponent.vue";
+import VehiclesComponent from "../../components/vehiculos-component/VehiclesComponent.vue";
 import { jwtDecode } from "jwt-decode";
 
 interface DashboardComponentData {
@@ -79,6 +80,7 @@ export default defineComponent({
     PrincipalComponent,
     RegistroComponent,
     CatalogoComponent,
+    VehiclesComponent,
   },
   data(): DashboardComponentData {
     return {
@@ -96,6 +98,11 @@ export default defineComponent({
         { icon: "bi bi-people mx-1", label: "Usuarios", active: false },
         { icon: "bi bi-pencil mx-1", label: "Registro", active: false },
         { icon: "bi bi-book mx-1", label: "Catálogos", active: false },
+        {
+          icon: "bi bi-truck mx-1",
+          label: "Vehículos",
+          active: false,
+        },
       ] as ListItem[],
       clientesData: [],
       usuariosData: [],
@@ -129,6 +136,11 @@ export default defineComponent({
     isCatalogActive() {
       return this.items.some(
         (item) => item.label === "Catálogos" && item.active
+      );
+    },
+    isVehiclesActive() {
+      return this.items.some(
+        (item) => item.label === "Vehículos" && item.active
       );
     },
   },

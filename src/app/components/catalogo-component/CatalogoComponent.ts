@@ -15,6 +15,7 @@ interface CatalogComponentData {
   activeTab: string;
   catalogData: Catalog[];
   catalogoSeleccionado: Catalog | null;
+  modoEdicion: boolean;
 }
 
 interface Catalog {
@@ -53,9 +54,16 @@ export default defineComponent({
         DESCRIPCION: "",
         ID_CATALOGO: 1,
       } as NuevoCatalogo,
+      modoEdicion: false,
     };
   },
   methods: {
+    resetValidation() {
+      const form = document.querySelector(".form") as HTMLFormElement | null;
+      if (form) {
+        form.classList.remove("was-validated");
+      }
+    },
     resetModal() {
       this.nuevoCatalogo = {
         DESCRIPCION: "",
@@ -63,6 +71,11 @@ export default defineComponent({
         ID_CATALOGO: this.nuevoCatalogo.ID_CATALOGO,
       };
       this.catalogoSeleccionado = null;
+      this.modoEdicion = false;
+      if (this.modal) {
+        this.modal.hide(); // Ocultar el modal si está abierto
+      }
+      this.resetValidation();
     },
     initModal() {
       const modalElement = document.getElementById("exampleModal");
@@ -79,6 +92,25 @@ export default defineComponent({
     },
     async guardarCatalogo() {
       try {
+        const form = document.querySelector(".form") as HTMLFormElement | null;
+
+        if (form) {
+          const descripcionInput = form.querySelector(
+            "#descripcion"
+          ) as HTMLInputElement;
+
+          if (!descripcionInput) {
+            console.error("No se pudieron encontrar los campos.");
+            return;
+          }
+
+          const descripcion = descripcionInput.value;
+
+          if (!descripcion) {
+            console.error("Por favor, ingrese datos válidos.");
+            return;
+          }
+        }
         const token = localStorage.getItem("token");
         if (token !== null) {
           const decodedToken: any = jwtDecode(token);
@@ -154,6 +186,7 @@ export default defineComponent({
       }
     },
     async editarCatalogo(catalogo: Catalog) {
+      this.modoEdicion = true;
       try {
         this.catalogoSeleccionado = catalogo;
         const modalElement = document.getElementById(
@@ -167,6 +200,10 @@ export default defineComponent({
             ESTATUS: 1,
             ID_CATALOGO: catalogo.ID_CATALOGO,
           };
+          modalElement.addEventListener("hidden.bs.modal", () => {
+            // Resetear los datos cuando se cierra el modal
+            this.resetModal();
+          });
         } else {
           console.error("Elemento modal no encontrado.");
         }
@@ -176,6 +213,25 @@ export default defineComponent({
     },
     async guardarCambios() {
       try {
+        const form = document.querySelector(".form") as HTMLFormElement | null;
+
+        if (form) {
+          const descripcionInput = form.querySelector(
+            "#descripcion"
+          ) as HTMLInputElement;
+
+          if (!descripcionInput) {
+            console.error("No se pudieron encontrar los campos.");
+            return;
+          }
+
+          const descripcion = descripcionInput.value;
+
+          if (!descripcion) {
+            console.error("Por favor, ingrese datos válidos.");
+            return;
+          }
+        }
         if (this.catalogoSeleccionado) {
           if (this.nuevoCatalogo.ESTATUS === "Activo") {
             this.nuevoCatalogo.ESTATUS = 1;
@@ -197,12 +253,7 @@ export default defineComponent({
               "alert alert-success"
             );
             this.modal.hide();
-            this.catalogoSeleccionado = null;
-            this.nuevoCatalogo = {
-              DESCRIPCION: "",
-              ESTATUS: 1,
-              ID_CATALOGO: this.nuevoCatalogo.ID_CATALOGO,
-            };
+            this.resetModal();
             if (this.activeTab === "Tipos de vehículo") {
               this.cargarTipos();
             } else if (this.activeTab === "Marcas") {
@@ -266,7 +317,7 @@ export default defineComponent({
               "alert alert-success"
             );
             this.modalEliminar.hide();
-            this.catalogoSeleccionado = null;
+            this.resetModal();
             if (this.activeTab === "Tipos de vehículo") {
               this.cargarTipos();
             } else if (this.activeTab === "Marcas") {
@@ -317,7 +368,7 @@ export default defineComponent({
               "alert alert-success"
             );
             this.modalReactivar.hide();
-            this.catalogoSeleccionado = null;
+            this.resetModal();
             if (this.activeTab === "Tipos de vehículo") {
               this.cargarTipos();
             } else if (this.activeTab === "Marcas") {
@@ -443,9 +494,32 @@ export default defineComponent({
         this.cargarAnios();
       }
     },
+    async manejarGuardarCatalogo() {
+      if (this.modoEdicion) {
+        await this.guardarCambios();
+      } else {
+        await this.guardarCatalogo();
+      }
+    },
   },
   mounted() {
     this.cargarTipos();
+
+    // Asociar evento submit una sola vez
+    const form = document.querySelector(".form") as HTMLFormElement | null;
+    if (form) {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (!form.checkValidity()) {
+          form.classList.add("was-validated");
+          return;
+        }
+
+        this.manejarGuardarCatalogo();
+      });
+    }
   },
   // watch: {
   //   "nuevoCatalogo.ID_CATALOGO"(newClienteId, oldClienteId) {
