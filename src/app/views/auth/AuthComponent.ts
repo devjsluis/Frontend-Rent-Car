@@ -71,7 +71,7 @@ const AuthComponent = defineComponent({
             this.alertMessage = "Credenciales incorrectas";
             this.alertClass = "alert alert-danger";
           } else if (error.response?.status === 404) {
-            this.alertMessage = "Usuario no encontrado";
+            this.alertMessage = "Usuario no encontrado o inactivo";
             this.alertClass = "alert alert-danger";
           } else {
             this.alertMessage = "Error desconocido";

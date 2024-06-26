@@ -2,6 +2,7 @@ import { defineComponent } from "vue";
 import axios from "../../../axiosConfig";
 import { Modal } from "bootstrap";
 import { getStatus } from "../../shared/enums/status.enum";
+import { jwtDecode } from "jwt-decode";
 
 interface UsuariosComponentData {
   usuariosData: Usuario[];
@@ -14,6 +15,7 @@ interface UsuariosComponentData {
   alertMessage: string;
   alertClass: string;
   modoEdicion: boolean;
+  idUser: any;
 }
 
 interface Usuario {
@@ -59,6 +61,7 @@ export default defineComponent({
       alertMessage: "",
       alertClass: "",
       modoEdicion: false,
+      idUser: null,
     };
   },
   methods: {
@@ -331,6 +334,22 @@ export default defineComponent({
       }
     },
     mostrarModalEliminar(usuario: Usuario) {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const decodedToken: any = jwtDecode(token);
+        if (decodedToken && decodedToken.id) {
+          this.idUser = decodedToken.id;
+        }
+
+        if (usuario.ID === this.idUser) {
+          // Aquí puedes mostrar un mensaje o alguna otra acción, ya que no debería permitir eliminar
+          this.mostrarAlerta(
+            "No puedes eliminar tu propio usuario",
+            "alert alert-warning"
+          );
+          return;
+        }
+      }
       this.usuarioSeleccionado = usuario; // Establecer el usuario seleccionado para eliminar
       const confirmarEliminacionModal = document.getElementById(
         "confirmarEliminacionModal"

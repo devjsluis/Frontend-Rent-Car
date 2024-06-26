@@ -10,6 +10,10 @@
     background: linear-gradient(45deg, #5856d6, #6f67db);
 }
 
+.bg-yellow-gradient {
+    background: linear-gradient(45deg, #f9b115, #f6960b);
+}
+
 .table-container {
     max-height: calc(100vh - 130px);
     overflow-y: auto;
@@ -20,7 +24,12 @@
     top: 0;
 }
 
-canvas {
-    width: 100%;
-    height: 50%;
+.card {
+    width: 280px;
+}
+
+th,
+td,
+td>i {
+    text-align: center;
 }
