@@ -337,7 +337,17 @@ export default defineComponent({
           console.error("No hay catálogo seleccionado para eliminar.");
         }
       } catch (error) {
-        console.error("Error al eliminar el catálogo:", error);
+        if (axios.isAxiosError(error)) {
+          if (error.response?.status === 409) {
+            const errorMessage = error.response.data.message;
+            this.mostrarAlerta(errorMessage, "alert alert-danger");
+            this.modalEliminar.hide();
+          } else {
+            console.error("Error al eliminar el catálogo:", error);
+          }
+        } else {
+          console.error("Error de red al eliminar el catálogo:", error);
+        }
       }
     },
     mostrarModalReactivar(catalogo: Catalog) {

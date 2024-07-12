@@ -23,6 +23,7 @@
         <tr>
           <th scope="col">ID</th>
           <th scope="col">Fecha de alta</th>
+          <th scope="col">Tipo</th>
           <th scope="col">Marca</th>
           <th scope="col">Modelo</th>
           <th scope="col">Año</th>
@@ -36,6 +37,7 @@
         <tr v-for="vehiculo in vehiclesData" :key="vehiculo.ID">
           <td>{{ vehiculo.ID }}</td>
           <td>{{ vehiculo.FECHA_ALTA }}</td>
+          <td>{{ vehiculo.TIPO_VEHICULO }}</td>
           <td>{{ vehiculo.MARCA }}</td>
           <td>{{ vehiculo.MODELO }}</td>
           <td>{{ vehiculo.ANIO }}</td>

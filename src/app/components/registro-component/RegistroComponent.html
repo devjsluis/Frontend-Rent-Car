@@ -32,6 +32,7 @@
           <th scope="col">Kilometraje final</th>
           <th scope="col">Destino de viaje</th>
           <th scope="col">Estatus</th>
+          <th scope="col">Finalizar renta</th>
           <th scope="col">Editar</th>
           <th scope="col">Eliminar</th>
           <th scope="col">Restaurar</th>
@@ -49,11 +50,28 @@
           <td>{{ register.FECHA_RENTA }}</td>
           <td>{{ register.FECHA_ENTREGA }}</td>
           <td>{{ register.FECHA_RETORNO }}</td>
-          <td>${{ register.COSTO_TOTAL.toLocaleString('en-US') }}</td>
+          <td>
+            {{ register.COSTO_TOTAL === 0 ? '' : '$' +
+            register.COSTO_TOTAL.toLocaleString('en-US') }}
+          </td>
           <td>{{ register.KILOMETRAJE_INICIAL.toLocaleString('en-US') }} km</td>
-          <td>{{ register.KILOMETRAJE_FINAL.toLocaleString('en-US') }} km</td>
+          <td>
+            {{ register.KILOMETRAJE_FINAL === 0 ? '' :
+            register.KILOMETRAJE_FINAL.toLocaleString('en-US') + ' km' }}
+          </td>
           <td>{{ register.DESTINO_DE_VIAJE }}</td>
-          <td>{{ register.ESTATUS }}</td>
+          <td>
+            {{ register.FINALIZADO === 1 && register.ESTATUS === "Activo" ?
+            "Finalizado" : register.ESTATUS }}
+          </td>
+          <td>
+            <i
+              class="bi bi-check2-all"
+              role="button"
+              v-if="register.FINALIZADO === 0"
+              @click="finalizarRenta(register)"
+            ></i>
+          </td>
           <td>
             <i
               class="bi bi-pencil"
@@ -157,21 +175,7 @@
               Por favor ingrese una fecha válida
             </div>
           </div>
-          <div class="mb-3 col-6 position-relative">
-            <label for="fechaEntrega" class="form-label"
-              >Fecha de Entrega</label
-            >
-            <input
-              type="date"
-              class="form-control"
-              id="fechaEntrega"
-              v-model="newRegister.FECHA_ENTREGA"
-              required
-            />
-            <div class="invalid-tooltip fw-bolder">
-              Por favor ingrese una fecha válida
-            </div>
-          </div>
+
           <div class="mb-3 col-6 position-relative">
             <label for="fechaRetorno" class="form-label"
               >Fecha de Retorno</label
@@ -189,6 +193,188 @@
           </div>
 
           <div class="mb-3 col-6 position-relative">
+            <label for="pagoInicial" class="form-label">Pago inicial</label>
+            <div class="row ps-2 pe-2">
+              <button class="span col-1">$</button>
+              <input
+                type="number"
+                class="form-control col"
+                id="pagoInicial"
+                v-model="newRegister.PAGO_INICIAL"
+                required
+                min="0"
+              />
+              <br />
+              <div class="invalid-tooltip fw-bolder col-12">
+                Por favor ingrese un pago inicial válido
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="kilometrajeInicial" class="form-label"
+              >Kilometraje Inicial</label
+            >
+            <input
+              type="number"
+              class="form-control"
+              id="kilometrajeInicial"
+              v-model="newRegister.KILOMETRAJE_INICIAL"
+              required
+              min="0"
+            />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese un kilometraje válido
+            </div>
+          </div>
+
+          <div class="mb-3 position-relative">
+            <label for="destinoViaje" class="form-label"
+              >Destino de viaje</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="destinoViaje"
+              v-model="newRegister.DESTINO_DE_VIAJE"
+              required
+            />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese un destino válido
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            type="button"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          >
+            Cerrar
+          </button>
+          <button
+            v-if="!registerSelected"
+            type="submit"
+            class="btn btn-primary"
+          >
+            Guardar
+          </button>
+          <button v-else type="submit" class="btn btn-primary">
+            Guardar Cambios
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="modalEditarFinalizado"
+  tabindex="-1"
+  aria-labelledby="modalEditarFinalizadoLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalEditarFinalizadoLabel">
+          {{ registerSelected ? 'Editar Registro' : 'Agregar Registro' }}
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <form class="form needs-validation" novalidate>
+        <div class="modal-body row">
+          <div class="mb-3 col-6 position-relative">
+            <label for="idCliente" class="form-label">Cliente</label>
+            <select
+              class="form-select"
+              id="idCliente"
+              v-model="newRegister.ID_CLIENTE"
+              required
+            >
+              <option :value="null" disabled>Selecciona un cliente</option>
+              <option v-for="cliente in clientesData" :value="cliente.ID">
+                {{ cliente.APELLIDOS }}, {{ cliente.NOMBRE }}
+              </option>
+            </select>
+            <div class="invalid-tooltip fw-bolder">
+              Por favor seleccione un cliente
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="idVehiculo" class="form-label">Vehículo</label>
+            <select
+              class="form-select"
+              id="idVehiculo"
+              v-model="newRegister.ID_VEHICULO"
+              required
+            >
+              <option :value="null" disabled>Selecciona un vehículo</option>
+              <option v-for="vehiculo in vehiclesData" :value="vehiculo.ID">
+                {{ vehiculo.MARCA + " " + vehiculo.MODELO + " " + vehiculo.ANIO
+                }}
+              </option>
+            </select>
+            <div class="invalid-tooltip fw-bolder">
+              Por favor seleccione un vehículo
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="fechaRenta" class="form-label">Fecha de Renta</label>
+            <input
+              type="date"
+              class="form-control"
+              id="fechaRenta"
+              v-model="newRegister.FECHA_RENTA"
+              required
+            />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese una fecha válida
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="fechaRetorno" class="form-label"
+              >Fecha de Retorno</label
+            >
+            <input
+              type="date"
+              class="form-control"
+              id="fechaRetorno"
+              v-model="newRegister.FECHA_RETORNO"
+              required
+            />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese una fecha válida
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="fechaEntrega" class="form-label"
+              >Fecha de Entrega</label
+            >
+            <input
+              type="date"
+              class="form-control"
+              id="fechaEntrega"
+              v-model="newRegister.FECHA_ENTREGA"
+              required
+            />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese una fecha válida
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
             <label for="costoTotal" class="form-label">Costo total</label>
             <div class="row ps-2 pe-2">
               <button class="span col-1">$</button>
@@ -196,13 +382,54 @@
                 type="number"
                 class="form-control col"
                 id="costoTotal"
-                v-model="newRegister.COSTO_TOTAL"
+                :value="calcularCostoTotal()"
+                required
+                min="0"
+                disabled
+              />
+              <br />
+              <div class="invalid-tooltip fw-bolder col-12">
+                Por favor ingrese un costo válido
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="pagoInicial" class="form-label">Pago Inicial</label>
+            <div class="row ps-2 pe-2">
+              <button class="span col-1">$</button>
+              <input
+                type="number"
+                class="form-control col"
+                id="pagoInicial"
+                v-model="newRegister.PAGO_INICIAL"
+                @input="calcularCostoTotal"
                 required
                 min="0"
               />
               <br />
               <div class="invalid-tooltip fw-bolder col-12">
-                Por favor ingrese un costo válido
+                Por favor ingrese un pago inicial válido
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="pagoFinal" class="form-label">Pago Final</label>
+            <div class="row ps-2 pe-2">
+              <button class="span col-1">$</button>
+              <input
+                type="number"
+                class="form-control col"
+                id="pagoFinal"
+                v-model="newRegister.PAGO_FINAL"
+                @input="calcularCostoTotal"
+                required
+                min="0"
+              />
+              <br />
+              <div class="invalid-tooltip fw-bolder col-12">
+                Por favor ingrese un pago final válido
               </div>
             </div>
           </div>
@@ -239,6 +466,7 @@
               Por favor ingrese un kilometraje válido
             </div>
           </div>
+
           <div class="mb-3 position-relative">
             <label for="destinoViaje" class="form-label"
               >Destino de viaje</label
@@ -273,6 +501,251 @@
           </button>
           <button v-else type="submit" class="btn btn-primary">
             Guardar Cambios
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="modalFinalizarRenta"
+  tabindex="-1"
+  aria-labelledby="modalFinalizarRentaLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Finalizar Renta</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <form class="form needs-validation" novalidate>
+        <div class="modal-body row">
+          <div class="mb-3 col-6 position-relative">
+            <label for="idCliente" class="form-label">Cliente</label>
+            <select
+              class="form-select"
+              id="idCliente"
+              v-model="newRegister.ID_CLIENTE"
+              required
+              disabled
+            >
+              <option :value="null" disabled>Selecciona un cliente</option>
+              <option v-for="cliente in clientesData" :value="cliente.ID">
+                {{ cliente.APELLIDOS }}, {{ cliente.NOMBRE }}
+              </option>
+            </select>
+            <div class="invalid-tooltip fw-bolder">
+              Por favor seleccione un cliente
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="idVehiculo" class="form-label">Vehículo</label>
+            <select
+              class="form-select"
+              id="idVehiculo"
+              v-model="newRegister.ID_VEHICULO"
+              required
+              disabled
+            >
+              <option :value="null" disabled>Selecciona un vehículo</option>
+              <option v-for="vehiculo in vehiclesData" :value="vehiculo.ID">
+                {{ vehiculo.MARCA + " " + vehiculo.MODELO + " " + vehiculo.ANIO
+                }}
+              </option>
+            </select>
+            <div class="invalid-tooltip fw-bolder">
+              Por favor seleccione un vehículo
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="fechaRenta" class="form-label">Fecha de Renta</label>
+            <input
+              type="date"
+              class="form-control"
+              id="fechaRenta"
+              v-model="newRegister.FECHA_RENTA"
+              required
+              disabled
+            />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese una fecha válida
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="fechaRetorno" class="form-label"
+              >Fecha de Retorno</label
+            >
+            <input
+              type="date"
+              class="form-control"
+              id="fechaRetorno"
+              v-model="newRegister.FECHA_RETORNO"
+              required
+              disabled
+            />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese una fecha válida
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="fechaEntrega" class="form-label"
+              >Fecha de Entrega</label
+            >
+            <input
+              type="date"
+              class="form-control"
+              id="fechaEntrega"
+              v-model="newRegister.FECHA_ENTREGA"
+              required
+            />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese una fecha válida
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="costoTotal" class="form-label">Costo total</label>
+            <div class="row ps-2 pe-2">
+              <button class="span col-1">$</button>
+              <input
+                type="number"
+                class="form-control col"
+                id="costoTotal"
+                :value="calcularCostoTotal()"
+                required
+                min="0"
+                disabled
+              />
+              <br />
+              <div class="invalid-tooltip fw-bolder col-12">
+                Por favor ingrese un costo válido
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="pagoInicial" class="form-label">Pago Inicial</label>
+            <div class="row ps-2 pe-2">
+              <button class="span col-1">$</button>
+              <input
+                type="number"
+                class="form-control col"
+                id="pagoInicial"
+                v-model="newRegister.PAGO_INICIAL"
+                @input="calcularCostoTotal"
+                required
+                min="0"
+                disabled
+              />
+              <br />
+              <div class="invalid-tooltip fw-bolder col-12">
+                Por favor ingrese un pago inicial válido
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="pagoFinal" class="form-label">Pago Final</label>
+            <div class="row ps-2 pe-2">
+              <button class="span col-1">$</button>
+              <input
+                type="number"
+                class="form-control col"
+                id="pagoFinal"
+                v-model="newRegister.PAGO_FINAL"
+                @input="calcularCostoTotal"
+                required
+                min="0"
+              />
+              <br />
+              <div class="invalid-tooltip fw-bolder col-12">
+                Por favor ingrese un pago final válido
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="kilometrajeInicial" class="form-label"
+              >Kilometraje Inicial</label
+            >
+            <input
+              type="number"
+              class="form-control"
+              id="kilometrajeInicial"
+              v-model="newRegister.KILOMETRAJE_INICIAL"
+              required
+              min="0"
+              disabled
+            />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese un kilometraje válido
+            </div>
+          </div>
+
+          <div class="mb-3 col-6 position-relative">
+            <label for="kilometrajeFinal" class="form-label"
+              >Kilometraje Final</label
+            >
+            <input
+              type="number"
+              class="form-control"
+              id="kilometrajeFinal"
+              v-model="newRegister.KILOMETRAJE_FINAL"
+              required
+              min="0"
+            />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese un kilometraje válido
+            </div>
+          </div>
+
+          <div class="mb-3 position-relative">
+            <label for="destinoViaje" class="form-label"
+              >Destino de viaje</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="destinoViaje"
+              v-model="newRegister.DESTINO_DE_VIAJE"
+              required
+              disabled
+            />
+            <div class="invalid-tooltip fw-bolder">
+              Por favor ingrese un destino válido
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            type="button"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          >
+            Cerrar
+          </button>
+          <button
+            v-if="!registerSelected"
+            type="submit"
+            class="btn btn-primary"
+          >
+            Guardar
+          </button>
+          <button v-else type="submit" class="btn btn-primary">
+            Finalizar
           </button>
         </div>
       </form>

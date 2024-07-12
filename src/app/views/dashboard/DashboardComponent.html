@@ -31,21 +31,52 @@
         @click="toggleDropdown"
         aria-expanded="false"
       >
-        <img alt="" width="32" height="32" class="rounded-circle me-2" />
+        <img
+          :src="profileImageUrl"
+          alt=""
+          width="32"
+          height="32"
+          class="rounded-circle me-2"
+        />
         <strong>{{userName}}</strong>
       </a>
       <ul
         class="dropdown-menu dropdown-menu-dark text-small shadow"
         :class="{ 'd-block': isDropdownOpen }"
       >
-        <li><a class="dropdown-item">New project...</a></li>
-        <li><a class="dropdown-item">Settings</a></li>
-        <li><a class="dropdown-item">Profile</a></li>
+        <li>
+          <a class="dropdown-item" @click="openFileDialog"
+            >Cambiar foto de perfil</a
+          ><input
+            type="file"
+            ref="fileInput"
+            @change="handleFileChange"
+            style="display: none"
+          />
+        </li>
         <li><hr class="dropdown-divider" /></li>
-        <li><a class="dropdown-item" @click="logout">Sign out</a></li>
+        <li><a class="dropdown-item" @click="logout">Cerrar sesión</a></li>
       </ul>
     </div>
   </div>
+
+  <!-- Cropper Modal -->
+  <div v-if="showCropper" class="cropper-modals">
+    <div class="cropper-containers bg-dark">
+      <img :src="imageURL" ref="image" id="image" />
+      <div class="cropper-buttonss">
+        <button class="btn btn-secondary me-3" @click="closeCropper">
+          Cerrar
+        </button>
+        <button class="btn btn-primary" @click="cropImage">Subir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mostrar la imagen de perfil
+  <div v-if="profileImageUrl">
+    <img :src="profileImageUrl" alt="Imagen de perfil" />
+  </div> -->
 
   <PrincipalComponent v-if="isPrincipalActive" />
   <ClientesComponent v-if="isClientesActive" />
