@@ -2,23 +2,21 @@ import { defineComponent } from "vue";
 import axios from "../../../axiosConfig";
 import { Modal } from "bootstrap";
 import { getStatus } from "../../shared/enums/status.enum";
-import { jwtDecode } from "jwt-decode";
-import FormRegisterComponent from "./components/FormRegisterComponent.vue";
+import FormRegisterComponent from "./components/form-register-component/FormRegisterComponent.vue";
 
 interface RegisterComponentData {
   clientesData: Cliente[];
-  clienteSeleccionado: Cliente | null;
   vehiclesData: Vehiculo[];
-  vehiculoSeleccionado: Vehiculo | null;
   registerData: Register[];
-  newRegister: NewRegister;
-  modal: any;
   modalEliminar: any;
   modalReactivar: any;
-  registerSelected: Register | null;
   showAlert: boolean;
   alertMessage: string;
   alertClass: string;
+  registerSelected: Register | null;
+  newRegister: NewRegister;
+  modal: any;
+
   modoEdicion: boolean;
   titleModal: string;
   isFinalizarRenta: boolean;
@@ -46,13 +44,13 @@ interface NewRegister {
   FECHA_RENTA: string | null;
   FECHA_ENTREGA: string | null;
   FECHA_RETORNO: string | null;
-  COSTO_TOTAL: number;
-  KILOMETRAJE_INICIAL: number;
-  KILOMETRAJE_FINAL: number;
+  COSTO_TOTAL: number | null;
+  KILOMETRAJE_INICIAL: number | null;
+  KILOMETRAJE_FINAL: number | null;
   DESTINO_DE_VIAJE: string;
   ESTATUS: number | string;
-  PAGO_INICIAL: number;
-  PAGO_FINAL: number;
+  PAGO_INICIAL: number | null;
+  PAGO_FINAL: number | null;
   FINALIZADO: number;
 }
 interface Cliente {
@@ -86,8 +84,6 @@ export default defineComponent({
   },
   data(): RegisterComponentData {
     return {
-      clienteSeleccionado: null,
-      vehiculoSeleccionado: null,
       clientesData: [],
       registerData: [],
       vehiclesData: [],
@@ -104,13 +100,13 @@ export default defineComponent({
         FECHA_RENTA: new Date().toISOString().slice(0, 10),
         FECHA_ENTREGA: null,
         FECHA_RETORNO: null,
-        COSTO_TOTAL: 0,
-        KILOMETRAJE_INICIAL: 0,
-        KILOMETRAJE_FINAL: 0,
+        COSTO_TOTAL: null,
+        KILOMETRAJE_INICIAL: null,
+        KILOMETRAJE_FINAL: null,
         DESTINO_DE_VIAJE: "",
         ESTATUS: 1,
-        PAGO_INICIAL: 0,
-        PAGO_FINAL: 0,
+        PAGO_INICIAL: null,
+        PAGO_FINAL: null,
         FINALIZADO: 0,
       } as NewRegister,
       modoEdicion: false,
@@ -120,28 +116,13 @@ export default defineComponent({
     };
   },
   methods: {
-    iniciarFormulario() {
-      const forms = document.querySelectorAll<HTMLFormElement>(".form");
-
-      forms.forEach((form) => {
-        form.addEventListener("submit", async (event) => {
-          event.preventDefault();
-          event.stopPropagation();
-
-          if (!form.checkValidity()) {
-            form.classList.add("was-validated");
-            return;
-          }
-
-          await this.manejarGuardarRegistro();
-        });
-      });
-    },
     async manejarGuardarRegistro() {
       if (this.modoEdicion) {
         await this.guardarCambios();
       } else {
-        await this.saveRegister();
+        await (
+          this.$refs.formulario as InstanceType<typeof FormRegisterComponent>
+        ).saveRegister();
       }
     },
     resetValidation() {
@@ -157,13 +138,13 @@ export default defineComponent({
         FECHA_RENTA: new Date().toISOString().slice(0, 10),
         FECHA_ENTREGA: null,
         FECHA_RETORNO: null,
-        COSTO_TOTAL: 0,
-        KILOMETRAJE_INICIAL: 0,
-        KILOMETRAJE_FINAL: 0,
+        COSTO_TOTAL: null,
+        KILOMETRAJE_INICIAL: null,
+        KILOMETRAJE_FINAL: null,
         DESTINO_DE_VIAJE: "",
         ESTATUS: 1,
-        PAGO_INICIAL: 0,
-        PAGO_FINAL: 0,
+        PAGO_INICIAL: null,
+        PAGO_FINAL: null,
         FINALIZADO: 0,
       };
       this.registerSelected = null;
@@ -189,66 +170,6 @@ export default defineComponent({
         console.error("No se encontró el elemento modal.");
       }
     },
-    async saveRegister() {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          console.error("Token JWT no encontrado en el almacenamiento local");
-          return;
-        }
-
-        const decodedToken: any = jwtDecode(token);
-        if (!decodedToken || !decodedToken.id) {
-          console.error("Token JWT no contiene información de usuario");
-          return;
-        }
-
-        const response = await axios.post(
-          `${import.meta.env.VITE_APP_API_URL}/rent/create`,
-          this.newRegister
-        );
-
-        if (response.status === 201) {
-          this.mostrarAlerta(
-            "Registro creado satisfactoriamente",
-            "alert alert-success"
-          );
-
-          if (this.modal) {
-            this.modal.hide();
-            this.resetModal();
-            const modalBackdrop = document.querySelector(".modal-backdrop");
-            if (modalBackdrop) {
-              modalBackdrop.parentNode?.removeChild(modalBackdrop);
-            }
-          } else {
-            console.error("El modal no está inicializado correctamente");
-          }
-
-          this.newRegister = {
-            ID_CLIENTE: 0,
-            ID_VEHICULO: 0,
-            FECHA_RENTA: new Date().toISOString().slice(0, 10),
-            FECHA_ENTREGA: "",
-            FECHA_RETORNO: "",
-            COSTO_TOTAL: 0,
-            KILOMETRAJE_INICIAL: 0,
-            KILOMETRAJE_FINAL: 0,
-            DESTINO_DE_VIAJE: "",
-            ESTATUS: 1,
-            PAGO_INICIAL: 0,
-            PAGO_FINAL: 0,
-            FINALIZADO: 0,
-          };
-
-          this.cargarRegisterRent();
-        } else {
-          console.error("Error al crear el registro:", response.statusText);
-        }
-      } catch (error) {
-        console.error("Error al guardar el registro:", error);
-      }
-    },
     async editRegister(register: Register) {
       this.modoEdicion = true;
       this.titleModal = "Editar Registro";
@@ -257,14 +178,6 @@ export default defineComponent({
       }
       try {
         this.registerSelected = register;
-        this.clienteSeleccionado =
-          this.clientesData.find(
-            (cliente) => cliente.ID === register.ID_CLIENTE
-          ) || null;
-        this.vehiculoSeleccionado =
-          this.vehiclesData.find(
-            (vehiculo) => vehiculo.ID === register.ID_VEHICULO
-          ) || null;
         const modalElement = document.getElementById("modal") as HTMLElement;
 
         if (modalElement) {
@@ -301,14 +214,6 @@ export default defineComponent({
       this.isFinalizarRenta = true;
       try {
         this.registerSelected = register;
-        this.clienteSeleccionado =
-          this.clientesData.find(
-            (cliente) => cliente.ID === register.ID_CLIENTE
-          ) || null;
-        this.vehiculoSeleccionado =
-          this.vehiclesData.find(
-            (vehiculo) => vehiculo.ID === register.ID_VEHICULO
-          ) || null;
 
         const modalElement = document.getElementById("modal") as HTMLElement;
         if (modalElement) {
@@ -396,7 +301,7 @@ export default defineComponent({
               const fechaEntrega = register.FECHA_ENTREGA.split("T")[0];
               register.FECHA_ENTREGA = fechaEntrega;
             } else {
-              register.FECHA_ENTREGA = "";
+              register.FECHA_ENTREGA = null;
             }
             if (register.FECHA_RETORNO) {
               const fechaRetorno = register.FECHA_RETORNO.split("T")[0];
@@ -405,14 +310,13 @@ export default defineComponent({
               register.FECHA_RETORNO = "";
             }
 
-            register.COSTO_TOTAL = register.COSTO_TOTAL ?? 0;
-            register.KILOMETRAJE_FINAL = register.KILOMETRAJE_FINAL ?? 0;
-            register.FECHA_ENTREGA = register.FECHA_ENTREGA ?? "";
+            register.COSTO_TOTAL = register.COSTO_TOTAL ?? null;
+            register.KILOMETRAJE_FINAL = register.KILOMETRAJE_FINAL ?? null;
+            register.FECHA_ENTREGA = register.FECHA_ENTREGA ?? null;
 
             register.ESTATUS = getStatus(register.ESTATUS);
             return register;
           });
-          // console.log(this.registerData);
           this.cargarClient();
           this.cargarVehicles();
         } else {
@@ -564,11 +468,6 @@ export default defineComponent({
         console.error("Error al reactivar el registro:", error);
       }
     },
-    calcularCostoTotal() {
-      this.newRegister.COSTO_TOTAL =
-        this.newRegister.PAGO_INICIAL + this.newRegister.PAGO_FINAL;
-      return this.newRegister.COSTO_TOTAL;
-    },
     mostrarAlerta(mensaje: string, estilo: string) {
       this.showAlert = true;
       this.alertMessage = mensaje;
@@ -580,6 +479,5 @@ export default defineComponent({
   },
   mounted() {
     this.cargarRegisterRent();
-    this.iniciarFormulario();
   },
 });

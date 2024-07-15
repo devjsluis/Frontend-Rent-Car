@@ -240,14 +240,12 @@
             Cerrar
           </button>
           <button
-            v-if="!registerSelected"
             type="submit"
             class="btn btn-primary"
+            :disabled="isFinalizarRenta && !registerSelected"
           >
-            Guardar
-          </button>
-          <button v-else type="submit" class="btn btn-primary">
-            Guardar Cambios
+            {{ !registerSelected ? 'Guardar' : isFinalizarRenta ? 'Finalizar' :
+            'Guardar cambios' }}
           </button>
         </div>
       </form>
