@@ -1,11 +1,10 @@
 import { defineComponent } from "vue";
-import axios from "../../../axiosConfig";
+import axios from "../../../../axiosConfig";
 import { Modal } from "bootstrap";
-import { getStatus } from "../../shared/enums/status.enum";
+import { getStatus } from "../../../shared/enums/status.enum";
 import { jwtDecode } from "jwt-decode";
-import FormRegisterComponent from "./components/FormRegisterComponent.vue";
 
-interface RegisterComponentData {
+interface FormRegisterComponentData {
   clientesData: Cliente[];
   clienteSeleccionado: Cliente | null;
   vehiclesData: Vehiculo[];
@@ -19,8 +18,6 @@ interface RegisterComponentData {
   showAlert: boolean;
   alertMessage: string;
   alertClass: string;
-  modoEdicion: boolean;
-  titleModal: string;
   isFinalizarRenta: boolean;
   editFinalizado: boolean;
 }
@@ -80,11 +77,8 @@ interface Vehiculo {
 }
 
 export default defineComponent({
-  name: "RegisterComponent",
-  components: {
-    FormRegisterComponent,
-  },
-  data(): RegisterComponentData {
+  name: "FormRegisterComponent",
+  data(): FormRegisterComponentData {
     return {
       clienteSeleccionado: null,
       vehiculoSeleccionado: null,
@@ -113,11 +107,13 @@ export default defineComponent({
         PAGO_FINAL: 0,
         FINALIZADO: 0,
       } as NewRegister,
-      modoEdicion: false,
-      titleModal: "",
       isFinalizarRenta: false,
       editFinalizado: false,
     };
+  },
+  props: {
+    titleModal: String,
+    modoEdicion: Boolean,
   },
   methods: {
     iniciarFormulario() {
@@ -142,51 +138,6 @@ export default defineComponent({
         await this.guardarCambios();
       } else {
         await this.saveRegister();
-      }
-    },
-    resetValidation() {
-      const form = document.querySelector(".form") as HTMLFormElement | null;
-      if (form) {
-        form.classList.remove("was-validated");
-      }
-    },
-    resetModal() {
-      this.newRegister = {
-        ID_CLIENTE: 0,
-        ID_VEHICULO: 0,
-        FECHA_RENTA: new Date().toISOString().slice(0, 10),
-        FECHA_ENTREGA: null,
-        FECHA_RETORNO: null,
-        COSTO_TOTAL: 0,
-        KILOMETRAJE_INICIAL: 0,
-        KILOMETRAJE_FINAL: 0,
-        DESTINO_DE_VIAJE: "",
-        ESTATUS: 1,
-        PAGO_INICIAL: 0,
-        PAGO_FINAL: 0,
-        FINALIZADO: 0,
-      };
-      this.registerSelected = null;
-      this.modoEdicion = false;
-      this.titleModal = "";
-      this.isFinalizarRenta = false;
-      this.editFinalizado = false;
-      if (this.modal) {
-        this.modal.hide();
-      }
-      this.resetValidation();
-    },
-    initModal() {
-      this.titleModal = "Agregar Registro";
-      const modalElement = document.getElementById("modal");
-      if (modalElement) {
-        this.modal = new Modal(modalElement);
-        modalElement.addEventListener("hidden.bs.modal", () => {
-          this.resetModal();
-        });
-        this.modal.show();
-      } else {
-        console.error("No se encontró el elemento modal.");
       }
     },
     async saveRegister() {
@@ -247,98 +198,6 @@ export default defineComponent({
         }
       } catch (error) {
         console.error("Error al guardar el registro:", error);
-      }
-    },
-    async editRegister(register: Register) {
-      this.modoEdicion = true;
-      this.titleModal = "Editar Registro";
-      if (register.FINALIZADO === 1) {
-        this.editFinalizado = true;
-      }
-      try {
-        this.registerSelected = register;
-        this.clienteSeleccionado =
-          this.clientesData.find(
-            (cliente) => cliente.ID === register.ID_CLIENTE
-          ) || null;
-        this.vehiculoSeleccionado =
-          this.vehiclesData.find(
-            (vehiculo) => vehiculo.ID === register.ID_VEHICULO
-          ) || null;
-        const modalElement = document.getElementById("modal") as HTMLElement;
-
-        if (modalElement) {
-          this.modal = new Modal(modalElement);
-          this.modal.show();
-          this.newRegister = {
-            ID_CLIENTE: register.ID_CLIENTE,
-            ID_VEHICULO: register.ID_VEHICULO,
-            FECHA_RENTA: register.FECHA_RENTA,
-            FECHA_ENTREGA: register.FECHA_ENTREGA,
-            FECHA_RETORNO: register.FECHA_RETORNO,
-            PAGO_INICIAL: register.PAGO_INICIAL,
-            PAGO_FINAL: register.PAGO_FINAL,
-            COSTO_TOTAL: register.COSTO_TOTAL,
-            KILOMETRAJE_INICIAL: register.KILOMETRAJE_INICIAL,
-            KILOMETRAJE_FINAL: register.KILOMETRAJE_FINAL,
-            DESTINO_DE_VIAJE: register.DESTINO_DE_VIAJE,
-            ESTATUS: register.ESTATUS,
-            FINALIZADO: register.FINALIZADO,
-          };
-          modalElement.addEventListener("hidden.bs.modal", () => {
-            this.resetModal();
-          });
-        } else {
-          console.error("Elemento modal no encontrado.");
-        }
-      } catch (error) {
-        console.error("Error al editar el registro:", error);
-      }
-    },
-    async finalizarRenta(register: Register) {
-      this.modoEdicion = true;
-      this.titleModal = "Finalizar Renta";
-      this.isFinalizarRenta = true;
-      try {
-        this.registerSelected = register;
-        this.clienteSeleccionado =
-          this.clientesData.find(
-            (cliente) => cliente.ID === register.ID_CLIENTE
-          ) || null;
-        this.vehiculoSeleccionado =
-          this.vehiclesData.find(
-            (vehiculo) => vehiculo.ID === register.ID_VEHICULO
-          ) || null;
-
-        const modalElement = document.getElementById("modal") as HTMLElement;
-        if (modalElement) {
-          this.modal = new Modal(modalElement);
-          this.modal.show();
-
-          this.newRegister = {
-            ID_CLIENTE: register.ID_CLIENTE,
-            ID_VEHICULO: register.ID_VEHICULO,
-            FECHA_RENTA: register.FECHA_RENTA,
-            FECHA_ENTREGA: register.FECHA_ENTREGA,
-            FECHA_RETORNO: register.FECHA_RETORNO,
-            PAGO_INICIAL: register.PAGO_INICIAL,
-            PAGO_FINAL: register.PAGO_FINAL,
-            COSTO_TOTAL: register.COSTO_TOTAL,
-            KILOMETRAJE_INICIAL: register.KILOMETRAJE_INICIAL,
-            KILOMETRAJE_FINAL: register.KILOMETRAJE_FINAL,
-            DESTINO_DE_VIAJE: register.DESTINO_DE_VIAJE,
-            ESTATUS: register.ESTATUS,
-            FINALIZADO: 1,
-          };
-
-          modalElement.addEventListener("hidden.bs.modal", () => {
-            this.resetModal();
-          });
-        } else {
-          console.error("No se encontró el elemento modal.");
-        }
-      } catch (error) {
-        console.error("Error al editar el registro:", error);
       }
     },
     async guardarCambios() {
@@ -422,6 +281,44 @@ export default defineComponent({
         console.error("Error al cargar los datos de registros:", error);
       }
     },
+    mostrarAlerta(mensaje: string, estilo: string) {
+      this.showAlert = true;
+      this.alertMessage = mensaje;
+      this.alertClass = estilo;
+      setTimeout(() => {
+        this.showAlert = false;
+      }, 3000);
+    },
+    resetValidation() {
+      const form = document.querySelector(".form") as HTMLFormElement | null;
+      if (form) {
+        form.classList.remove("was-validated");
+      }
+    },
+    resetModal() {
+      this.newRegister = {
+        ID_CLIENTE: 0,
+        ID_VEHICULO: 0,
+        FECHA_RENTA: new Date().toISOString().slice(0, 10),
+        FECHA_ENTREGA: null,
+        FECHA_RETORNO: null,
+        COSTO_TOTAL: 0,
+        KILOMETRAJE_INICIAL: 0,
+        KILOMETRAJE_FINAL: 0,
+        DESTINO_DE_VIAJE: "",
+        ESTATUS: 1,
+        PAGO_INICIAL: 0,
+        PAGO_FINAL: 0,
+        FINALIZADO: 0,
+      };
+      this.registerSelected = null;
+      this.isFinalizarRenta = false;
+      this.editFinalizado = false;
+      if (this.modal) {
+        this.modal.hide();
+      }
+      this.resetValidation();
+    },
     async cargarClient() {
       try {
         const token = localStorage.getItem("token");
@@ -478,108 +375,8 @@ export default defineComponent({
         console.error("Error al cargar los datos de clientes:", error);
       }
     },
-    mostrarModalEliminar(register: Register) {
-      this.registerSelected = register;
-      const confirmarEliminacionModal = document.getElementById(
-        "confirmarEliminacionModal"
-      );
-      if (confirmarEliminacionModal) {
-        this.modalEliminar = new Modal(confirmarEliminacionModal);
-        this.modalEliminar.show();
-      } else {
-        console.error(
-          "No se encontró el elemento modal de confirmación de eliminación."
-        );
-      }
-    },
-    mostrarModalReactivar(register: Register) {
-      this.registerSelected = register;
-      const confirmarReactivacionModal = document.getElementById(
-        "confirmarReactivacionModal"
-      );
-      if (confirmarReactivacionModal) {
-        this.modalReactivar = new Modal(confirmarReactivacionModal);
-        this.modalReactivar.show();
-      } else {
-        console.error(
-          "No se encontró el elemento modal de confirmación de reactivación."
-        );
-      }
-    },
-    async deleteRegister() {
-      try {
-        if (this.registerSelected) {
-          const response = await axios.delete(
-            `${import.meta.env.VITE_APP_API_URL}/rent/delete/${
-              this.registerSelected.ID
-            }`
-          );
-          if (response.status === 200) {
-            this.mostrarAlerta(
-              "Registro eliminado satisfactoriamente",
-              "alert alert-success"
-            );
-            this.modalEliminar.hide();
-            this.resetModal();
-            this.cargarRegisterRent();
-          } else {
-            console.error(
-              "Error al eliminar el registro:",
-              response.statusText
-            );
-          }
-        } else {
-          console.error("No hay registro seleccionado para eliminar.");
-        }
-      } catch (error) {
-        console.error("Error al eliminar el registro:", error);
-      }
-    },
-    async reactivateRegister() {
-      try {
-        if (this.registerSelected) {
-          const response = await axios.put(
-            `${import.meta.env.VITE_APP_API_URL}/rent/reactivate/${
-              this.registerSelected.ID
-            }`
-          );
-          if (response.status === 200) {
-            this.mostrarAlerta(
-              "Registro reactivado satisfactoriamente",
-              "alert alert-success"
-            );
-            this.modalReactivar.hide();
-            this.resetModal();
-            this.cargarRegisterRent();
-          } else {
-            console.error(
-              "Error al reactivar el registro:",
-              response.statusText
-            );
-          }
-        } else {
-          console.error("No hay registro seleccionado para reactivar.");
-        }
-      } catch (error) {
-        console.error("Error al reactivar el registro:", error);
-      }
-    },
-    calcularCostoTotal() {
-      this.newRegister.COSTO_TOTAL =
-        this.newRegister.PAGO_INICIAL + this.newRegister.PAGO_FINAL;
-      return this.newRegister.COSTO_TOTAL;
-    },
-    mostrarAlerta(mensaje: string, estilo: string) {
-      this.showAlert = true;
-      this.alertMessage = mensaje;
-      this.alertClass = estilo;
-      setTimeout(() => {
-        this.showAlert = false;
-      }, 3000);
-    },
   },
   mounted() {
-    this.cargarRegisterRent();
     this.iniciarFormulario();
   },
 });
