@@ -276,7 +276,7 @@ export default defineComponent({
             console.error("Error al editar el registro:", response.statusText);
           }
         } else {
-          console.error("No se ha seleccionado un cliente o registro.");
+          console.error("No se ha seleccionado un registro.");
         }
       } catch (error) {
         console.error("Error al guardar los cambios:", error);
@@ -335,7 +335,7 @@ export default defineComponent({
             `${import.meta.env.VITE_APP_API_URL}/clientes/getByName`
           );
           this.clientesData = response.data.body.map((cliente: Cliente) => {
-            if (cliente.FECHA_NACIMIENTO !== undefined) {
+            if (cliente.FECHA_NACIMIENTO) {
               const fechaNacimiento = cliente.FECHA_NACIMIENTO.split("T")[0];
               cliente.FECHA_NACIMIENTO = fechaNacimiento;
             } else {

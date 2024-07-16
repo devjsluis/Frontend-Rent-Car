@@ -2,7 +2,7 @@ import { defineComponent } from "vue";
 import axios from "../../../axiosConfig";
 import { Modal } from "bootstrap";
 import { getStatus } from "../../shared/enums/status.enum";
-import { jwtDecode } from "jwt-decode";
+import FormClientesComponent from "./components/form-clientes-component/FormClientesComponent.vue";
 
 interface ClientesComponentData {
   clientesData: Cliente[];
@@ -16,13 +16,14 @@ interface ClientesComponentData {
   alertMessage: string;
   alertClass: string;
   modoEdicion: boolean;
+  titleModal: string;
 }
 
 interface Cliente {
   ID: number;
   NOMBRE: string;
   APELLIDOS: string;
-  FECHA_NACIMIENTO: string;
+  FECHA_NACIMIENTO: string | null;
   TELEFONO: string;
   CORREO: string;
   ESTATUS: number | string;
@@ -32,7 +33,7 @@ interface Cliente {
 interface NuevoCliente {
   NOMBRE: string;
   APELLIDOS: string;
-  FECHA_NACIMIENTO: string;
+  FECHA_NACIMIENTO: string | null;
   TELEFONO: string;
   CORREO: string;
   ESTATUS: number | string;
@@ -41,6 +42,9 @@ interface NuevoCliente {
 
 export default defineComponent({
   name: "ClientesComponent",
+  components: {
+    FormClientesComponent,
+  },
   data(): ClientesComponentData {
     return {
       clientesData: [],
@@ -52,7 +56,7 @@ export default defineComponent({
       nuevoCliente: {
         NOMBRE: "",
         APELLIDOS: "",
-        FECHA_NACIMIENTO: "",
+        FECHA_NACIMIENTO: null,
         TELEFONO: "",
         CORREO: "",
         ESTATUS: 1,
@@ -62,13 +66,58 @@ export default defineComponent({
       alertMessage: "",
       alertClass: "",
       modoEdicion: false,
+      titleModal: "",
     };
   },
   methods: {
+    async manejarGuardarCliente() {
+      if (this.modoEdicion) {
+        await this.guardarCambios();
+      } else {
+        await (
+          this.$refs.formulario as InstanceType<typeof FormClientesComponent>
+        ).guardarCliente();
+      }
+    },
+    async guardarCambios() {
+      try {
+        if (this.clienteSeleccionado) {
+          if (this.nuevoCliente.ESTATUS === "Activo") {
+            this.nuevoCliente.ESTATUS = 1;
+          } else if (this.nuevoCliente.ESTATUS === "Inactivo") {
+            this.nuevoCliente.ESTATUS = 0;
+          } else if (this.nuevoCliente.ESTATUS === "Indefinido") {
+            this.nuevoCliente.ESTATUS = 2;
+          }
+
+          if (this.clienteSeleccionado) {
+            const response = await axios.put(
+              `${import.meta.env.VITE_APP_API_URL}/clientes/update/${
+                this.clienteSeleccionado.ID
+              }`,
+              this.nuevoCliente
+            );
+            if (response.status === 200) {
+              this.mostrarAlerta(
+                "Cliente editado satisfactoriamente",
+                "alert alert-success"
+              );
+              this.modal.hide();
+              this.resetModal();
+              this.cargarClientes();
+            } else {
+              console.error("Error al editar el cliente:", response.statusText);
+            }
+          }
+        } else {
+          console.error("No hay cliente seleccionado para editar.");
+        }
+      } catch (error) {
+        console.error("Error al guardar los cambios:", error);
+      }
+    },
     resetValidation() {
-      const form = document.querySelector(
-        ".form-login"
-      ) as HTMLFormElement | null;
+      const form = document.querySelector(".form") as HTMLFormElement | null;
       if (form) {
         form.classList.remove("was-validated");
       }
@@ -85,7 +134,7 @@ export default defineComponent({
       this.nuevoCliente = {
         NOMBRE: "",
         APELLIDOS: "",
-        FECHA_NACIMIENTO: "",
+        FECHA_NACIMIENTO: null,
         TELEFONO: "",
         CORREO: "",
         ESTATUS: 1,
@@ -93,20 +142,21 @@ export default defineComponent({
       };
       this.clienteSeleccionado = null;
       this.modoEdicion = false;
+      this.titleModal = "";
       if (this.modal) {
-        this.modal.hide(); // Ocultar el modal si está abierto
+        this.modal.hide();
       }
       this.resetValidation();
     },
     initModal() {
-      const modalElement = document.getElementById("exampleModal");
+      this.titleModal = "Agregar Registro";
+      const modalElement = document.getElementById("modal");
       if (modalElement) {
         this.modal = new Modal(modalElement);
         modalElement.addEventListener("hidden.bs.modal", () => {
-          // Resetear los datos cuando se cierra el modal
           this.resetModal();
         });
-        this.modal.show(); // Mostrar el modal
+        this.modal.show();
       } else {
         console.error("No se encontró el elemento modal.");
       }
@@ -115,15 +165,12 @@ export default defineComponent({
       try {
         const token = localStorage.getItem("token");
         if (token) {
-          //PARA VERIFICAR EL ROL
-          // const decodedToken: any = jwtDecode(token);
-          // console.log(decodedToken.rol);
           axios.defaults.headers.common["Authorization"] = token;
           const response = await axios.get(
             `${import.meta.env.VITE_APP_API_URL}/clientes/get`
           );
           this.clientesData = response.data.body.map((cliente: Cliente) => {
-            if (cliente.FECHA_NACIMIENTO !== undefined) {
+            if (cliente.FECHA_NACIMIENTO) {
               const fechaNacimiento = cliente.FECHA_NACIMIENTO.split("T")[0];
               cliente.FECHA_NACIMIENTO = fechaNacimiento;
             } else {
@@ -142,109 +189,12 @@ export default defineComponent({
         console.error("Error al cargar los datos de clientes:", error);
       }
     },
-    async guardarCliente() {
-      try {
-        const form = document.querySelector(
-          ".form-login"
-        ) as HTMLFormElement | null;
-
-        if (form) {
-          const nombreInput = form.querySelector("#nombre") as HTMLInputElement;
-          const apellidosInput = form.querySelector(
-            "#apellidos"
-          ) as HTMLInputElement;
-          const fechaNacimientoInput = form.querySelector(
-            "#fechaNacimiento"
-          ) as HTMLInputElement;
-          const telefonoInput = form.querySelector(
-            "#telefono"
-          ) as HTMLInputElement;
-          const correoInput = form.querySelector("#correo") as HTMLInputElement;
-
-          if (
-            !nombreInput ||
-            !apellidosInput ||
-            !fechaNacimientoInput ||
-            !telefonoInput ||
-            !correoInput
-          ) {
-            console.error("No se pudieron encontrar los campos.");
-            return;
-          }
-
-          const nombre = nombreInput.value;
-          const apellidos = apellidosInput.value;
-          const fechaNacimiento = fechaNacimientoInput.value;
-          const telefono = telefonoInput.value;
-          const correo = correoInput.value;
-
-          if (
-            !nombre ||
-            !apellidos ||
-            !fechaNacimiento ||
-            !telefono ||
-            !correo
-          ) {
-            console.error("Por favor, ingrese datos válidos.");
-            return;
-          }
-        }
-
-        const token = localStorage.getItem("token");
-        if (token !== null) {
-          const decodedToken: any = jwtDecode(token);
-          if (decodedToken && decodedToken.id) {
-            this.idUser = decodedToken.id;
-            this.nuevoCliente.ID_USUARIO_ALTA = this.idUser;
-
-            const response = await axios.post(
-              `${import.meta.env.VITE_APP_API_URL}/clientes/create`,
-              this.nuevoCliente
-            );
-            if (response.status === 201) {
-              this.mostrarAlerta(
-                "Cliente creado satisfactoriamente",
-                "alert alert-success"
-              );
-              if (this.modal) {
-                this.modal.hide();
-                this.resetModal();
-                const modalBackdrop = document.querySelector(".modal-backdrop");
-                if (modalBackdrop) {
-                  modalBackdrop.parentNode?.removeChild(modalBackdrop);
-                }
-              } else {
-                console.log("El modal no está inicializado correctamente");
-              }
-
-              this.nuevoCliente = {
-                NOMBRE: "",
-                APELLIDOS: "",
-                FECHA_NACIMIENTO: "",
-                TELEFONO: "",
-                CORREO: "",
-                ESTATUS: 1,
-                ID_USUARIO_ALTA: 0,
-              };
-              this.cargarClientes();
-            } else {
-              console.error("Error al crear el cliente:", response.statusText);
-            }
-          } else {
-            console.error("Token JWT no contiene información de usuario");
-          }
-        }
-      } catch (error) {
-        console.error("Error al guardar el cliente:", error);
-      }
-    },
     async editarCliente(cliente: Cliente) {
+      this.titleModal = "Editar Registro";
       this.modoEdicion = true;
       try {
-        this.clienteSeleccionado = cliente; // Guarda el cliente seleccionado para edición
-        const modalElement = document.getElementById(
-          "exampleModal"
-        ) as HTMLElement;
+        this.clienteSeleccionado = cliente;
+        const modalElement = document.getElementById("modal") as HTMLElement;
         if (modalElement) {
           this.modal = new Modal(modalElement);
           this.modal.show();
@@ -258,7 +208,6 @@ export default defineComponent({
             ID_USUARIO_ALTA: cliente.ID_USUARIO_ALTA,
           };
           modalElement.addEventListener("hidden.bs.modal", () => {
-            // Resetear los datos cuando se cierra el modal
             this.resetModal();
           });
         } else {
@@ -268,95 +217,14 @@ export default defineComponent({
         console.error("Error al editar el cliente:", error);
       }
     },
-    async guardarCambios() {
-      try {
-        const form = document.querySelector(
-          ".form-login"
-        ) as HTMLFormElement | null;
-
-        if (form) {
-          const nombreInput = form.querySelector("#nombre") as HTMLInputElement;
-          const apellidosInput = form.querySelector(
-            "#apellidos"
-          ) as HTMLInputElement;
-          const fechaNacimientoInput = form.querySelector(
-            "#fechaNacimiento"
-          ) as HTMLInputElement;
-          const telefonoInput = form.querySelector(
-            "#telefono"
-          ) as HTMLInputElement;
-          const correoInput = form.querySelector("#correo") as HTMLInputElement;
-
-          if (
-            !nombreInput ||
-            !apellidosInput ||
-            !fechaNacimientoInput ||
-            !telefonoInput ||
-            !correoInput
-          ) {
-            console.error("No se pudieron encontrar los campos.");
-            return;
-          }
-
-          const nombre = nombreInput.value;
-          const apellidos = apellidosInput.value;
-          const fechaNacimiento = fechaNacimientoInput.value;
-          const telefono = telefonoInput.value;
-          const correo = correoInput.value;
-
-          if (
-            !nombre ||
-            !apellidos ||
-            !fechaNacimiento ||
-            !telefono ||
-            !correo
-          ) {
-            console.error("Por favor, ingrese datos válidos.");
-            return;
-          }
-        }
-
-        if (this.clienteSeleccionado) {
-          if (this.nuevoCliente.ESTATUS === "Activo") {
-            this.nuevoCliente.ESTATUS = 1;
-          } else if (this.nuevoCliente.ESTATUS === "Inactivo") {
-            this.nuevoCliente.ESTATUS = 0;
-          } else if (this.nuevoCliente.ESTATUS === "Indefinido") {
-            this.nuevoCliente.ESTATUS = 2;
-          }
-
-          const response = await axios.put(
-            `${import.meta.env.VITE_APP_API_URL}/clientes/update/${
-              this.clienteSeleccionado.ID
-            }`,
-            this.nuevoCliente
-          );
-          if (response.status === 200) {
-            this.mostrarAlerta(
-              "Cliente editado satisfactoriamente",
-              "alert alert-success"
-            );
-            this.modal.hide();
-            this.resetModal();
-            this.cargarClientes();
-          } else {
-            console.error("Error al editar el cliente:", response.statusText);
-          }
-        } else {
-          console.error("No hay cliente seleccionado para editar.");
-        }
-      } catch (error) {
-        console.error("Error al guardar los cambios:", error);
-      }
-    },
     mostrarModalEliminar(cliente: Cliente) {
-      this.clienteSeleccionado = cliente; // Establecer el cliente seleccionado para eliminar
+      this.clienteSeleccionado = cliente;
       const confirmarEliminacionModal = document.getElementById(
         "confirmarEliminacionModal"
       );
       if (confirmarEliminacionModal) {
         this.modalEliminar = new Modal(confirmarEliminacionModal);
-        this.modalEliminar.show(); // Mostrar el modal de confirmación de eliminación
+        this.modalEliminar.show();
       } else {
         console.error(
           "No se encontró el elemento modal de confirmación de eliminación."
@@ -390,13 +258,13 @@ export default defineComponent({
       }
     },
     mostrarModalReactivar(cliente: Cliente) {
-      this.clienteSeleccionado = cliente; // Establecer el cliente seleccionado para reactivar
+      this.clienteSeleccionado = cliente;
       const confirmarReactivacionModal = document.getElementById(
         "confirmarReactivacionModal"
       );
       if (confirmarReactivacionModal) {
         this.modalReactivar = new Modal(confirmarReactivacionModal);
-        this.modalReactivar.show(); // Mostrar el modal de confirmación de reactivación
+        this.modalReactivar.show();
       } else {
         console.error(
           "No se encontró el elemento modal de confirmación de reactivación."
@@ -432,41 +300,8 @@ export default defineComponent({
         console.error("Error al reactivar el cliente:", error);
       }
     },
-    async manejarGuardarCliente() {
-      if (this.modoEdicion) {
-        await this.guardarCambios();
-      } else {
-        await this.guardarCliente();
-      }
-    },
   },
   mounted() {
     this.cargarClientes();
-
-    // Asociar evento submit una sola vez
-    const form = document.querySelector(
-      ".form-login"
-    ) as HTMLFormElement | null;
-    if (form) {
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (!form.checkValidity()) {
-          form.classList.add("was-validated");
-          return;
-        }
-
-        this.manejarGuardarCliente();
-      });
-    }
   },
-  // watch: {
-  //   modoEdicion(newClienteId, oldClienteId) {
-  //     if (newClienteId !== oldClienteId) {
-  //       console.log("El ID del cliente ha cambiado:", newClienteId);
-  //       // Aquí puedes agregar la lógica que necesites al cambiar el cliente seleccionado
-  //     }
-  //   },
-  // },
 });
