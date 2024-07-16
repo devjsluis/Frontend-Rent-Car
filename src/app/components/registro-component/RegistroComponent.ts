@@ -248,15 +248,15 @@ export default defineComponent({
     },
     async guardarCambios() {
       try {
-        if (this.newRegister.ESTATUS === "Activo") {
-          this.newRegister.ESTATUS = 1;
-        } else if (this.newRegister.ESTATUS === "Inactivo") {
-          this.newRegister.ESTATUS = 0;
-        } else if (this.newRegister.ESTATUS === "Indefinido") {
-          this.newRegister.ESTATUS = 2;
-        }
-
         if (this.registerSelected) {
+          if (this.newRegister.ESTATUS === "Activo") {
+            this.newRegister.ESTATUS = 1;
+          } else if (this.newRegister.ESTATUS === "Inactivo") {
+            this.newRegister.ESTATUS = 0;
+          } else if (this.newRegister.ESTATUS === "Indefinido") {
+            this.newRegister.ESTATUS = 2;
+          }
+
           const response = await axios.put(
             `${import.meta.env.VITE_APP_API_URL}/rent/update/${
               this.registerSelected.ID

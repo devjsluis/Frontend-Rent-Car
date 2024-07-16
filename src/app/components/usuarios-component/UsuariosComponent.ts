@@ -3,6 +3,7 @@ import axios from "../../../axiosConfig";
 import { Modal } from "bootstrap";
 import { getStatus } from "../../shared/enums/status.enum";
 import { jwtDecode } from "jwt-decode";
+import FormUsuariosComponent from "./form-usuarios-component/FormUsuariosComponent.vue";
 
 interface UsuariosComponentData {
   usuariosData: Usuario[];
@@ -16,13 +17,14 @@ interface UsuariosComponentData {
   alertClass: string;
   modoEdicion: boolean;
   idUser: any;
+  titleModal: string;
 }
 
 interface Usuario {
   ID: number;
   NOMBRE: string;
   APELLIDOS: string;
-  FECHA_NACIMIENTO: string;
+  FECHA_NACIMIENTO: string | null;
   CORREO: string;
   CONTRASENA: string;
   ESTATUS: number | string;
@@ -32,7 +34,7 @@ interface Usuario {
 interface NuevoUsuario {
   NOMBRE: string;
   APELLIDOS: string;
-  FECHA_NACIMIENTO: string;
+  FECHA_NACIMIENTO: string | null;
   CORREO: string;
   CONTRASENA: string;
   ESTATUS: number | string;
@@ -41,6 +43,9 @@ interface NuevoUsuario {
 
 export default defineComponent({
   name: "UsuariosComponent",
+  components: {
+    FormUsuariosComponent,
+  },
   data(): UsuariosComponentData {
     return {
       usuariosData: [],
@@ -51,7 +56,7 @@ export default defineComponent({
       nuevoUsuario: {
         NOMBRE: "",
         APELLIDOS: "",
-        FECHA_NACIMIENTO: "",
+        FECHA_NACIMIENTO: null,
         CORREO: "",
         CONTRASENA: "",
         ESTATUS: 1,
@@ -62,244 +67,21 @@ export default defineComponent({
       alertClass: "",
       modoEdicion: false,
       idUser: null,
+      titleModal: "",
     };
   },
   methods: {
-    resetValidation() {
-      const form = document.querySelector(
-        ".form-login"
-      ) as HTMLFormElement | null;
-      if (form) {
-        form.classList.remove("was-validated");
-      }
-    },
-    mostrarAlerta(mensaje: string, estilo: string) {
-      this.showAlert = true;
-      this.alertMessage = mensaje;
-      this.alertClass = estilo;
-      setTimeout(() => {
-        this.showAlert = false;
-      }, 3000);
-    },
-    resetModal() {
-      this.nuevoUsuario = {
-        NOMBRE: "",
-        APELLIDOS: "",
-        FECHA_NACIMIENTO: "",
-        CORREO: "",
-        CONTRASENA: "",
-        ESTATUS: 1,
-        ID_ROL: 1,
-      };
-      this.usuarioSeleccionado = null;
-      this.modoEdicion = false;
-      if (this.modal) {
-        this.modal.hide(); // Ocultar el modal si está abierto
-      }
-      this.resetValidation();
-    },
-    initModal() {
-      const modalElement = document.getElementById("exampleModal");
-      if (modalElement) {
-        this.modal = new Modal(modalElement);
-        modalElement.addEventListener("hidden.bs.modal", () => {
-          // Resetear los datos cuando se cierra el modal
-          this.resetModal();
-        });
-        this.modal.show(); // Mostrar el modal
+    async manejarGuardarUsuario() {
+      if (this.modoEdicion) {
+        await this.guardarCambios();
       } else {
-        console.error("No se encontró el elemento modal.");
-      }
-    },
-    async cargarUsuarios() {
-      try {
-        const token = localStorage.getItem("token");
-        if (token) {
-          axios.defaults.headers.common["Authorization"] = token;
-          const response = await axios.get(
-            `${import.meta.env.VITE_APP_API_URL}/users/get`
-          );
-          this.usuariosData = response.data.body.map((usuario: Usuario) => {
-            if (usuario.FECHA_NACIMIENTO !== undefined) {
-              const fechaNacimiento = usuario.FECHA_NACIMIENTO.split("T")[0];
-              usuario.FECHA_NACIMIENTO = fechaNacimiento;
-            } else {
-              console.warn(
-                `Fecha de nacimiento no definida para el usuario con ID: ${usuario.ID}`
-              );
-              usuario.FECHA_NACIMIENTO = "";
-            }
-            usuario.ESTATUS = getStatus(usuario.ESTATUS);
-            return usuario;
-          });
-        } else {
-          console.error("No se encontró el token en localStorage.");
-        }
-      } catch (error) {
-        console.error("Error al cargar los datos de usuarios:", error);
-      }
-    },
-    async guardarUsuario() {
-      try {
-        const form = document.querySelector(
-          ".form-login"
-        ) as HTMLFormElement | null;
-
-        if (form) {
-          const nombreInput = form.querySelector("#nombre") as HTMLInputElement;
-          const apellidosInput = form.querySelector(
-            "#apellidos"
-          ) as HTMLInputElement;
-          const fechaNacimientoInput = form.querySelector(
-            "#fechaNacimiento"
-          ) as HTMLInputElement;
-          const correoInput = form.querySelector("#correo") as HTMLInputElement;
-          const contrasenaInput = form.querySelector(
-            "#contrasena"
-          ) as HTMLInputElement;
-
-          if (
-            !nombreInput ||
-            !apellidosInput ||
-            !fechaNacimientoInput ||
-            !contrasenaInput ||
-            !correoInput
-          ) {
-            console.error("No se pudieron encontrar los campos.");
-            return;
-          }
-
-          const nombre = nombreInput.value;
-          const apellidos = apellidosInput.value;
-          const fechaNacimiento = fechaNacimientoInput.value;
-          const contrasena = contrasenaInput.value;
-          const correo = correoInput.value;
-
-          if (
-            !nombre ||
-            !apellidos ||
-            !fechaNacimiento ||
-            !contrasena ||
-            !correo
-          ) {
-            console.error("Por favor, ingrese datos válidos.");
-            return;
-          }
-        }
-        const response = await axios.post(
-          `${import.meta.env.VITE_APP_API_URL}/users/create`,
-          this.nuevoUsuario
-        );
-        if (response.status === 201) {
-          this.mostrarAlerta(
-            "Usuario creado satisfactoriamente",
-            "alert alert-success"
-          );
-          if (this.modal) {
-            this.modal.hide();
-            this.resetModal();
-            const modalBackdrop = document.querySelector(".modal-backdrop"); // Seleccionar el elemento con la clase 'modal-backdrop'
-            if (modalBackdrop) {
-              modalBackdrop.parentNode?.removeChild(modalBackdrop); // Eliminar el elemento del DOM
-            }
-          } else {
-            console.log("El modal no está inicializado correctamente");
-          }
-
-          this.nuevoUsuario = {
-            NOMBRE: "",
-            APELLIDOS: "",
-            FECHA_NACIMIENTO: "",
-            CORREO: "",
-            CONTRASENA: "",
-            ESTATUS: 1,
-            ID_ROL: 1,
-          };
-          this.cargarUsuarios();
-        } else {
-          console.error("Error al crear el usuario:", response.statusText);
-        }
-      } catch (error) {
-        console.error("Error al guardar el usuario:", error);
-      }
-    },
-    async editarUsuario(usuario: Usuario) {
-      this.modoEdicion = true;
-      try {
-        this.usuarioSeleccionado = usuario; // Guarda el usuario seleccionado para edición
-        const modalElement = document.getElementById(
-          "exampleModal"
-        ) as HTMLElement;
-        if (modalElement) {
-          this.modal = new Modal(modalElement);
-          this.modal.show();
-          this.nuevoUsuario = {
-            NOMBRE: usuario.NOMBRE,
-            APELLIDOS: usuario.APELLIDOS,
-            FECHA_NACIMIENTO: usuario.FECHA_NACIMIENTO,
-            CORREO: usuario.CORREO,
-            CONTRASENA: usuario.CONTRASENA,
-            ESTATUS: usuario.ESTATUS,
-            ID_ROL: usuario.ID_ROL,
-          };
-          modalElement.addEventListener("hidden.bs.modal", () => {
-            // Resetear los datos cuando se cierra el modal
-            this.resetModal();
-          });
-        } else {
-          console.error("Elemento modal no encontrado.");
-        }
-      } catch (error) {
-        console.error("Error al editar el usuario:", error);
+        await (
+          this.$refs.formulario as InstanceType<typeof FormUsuariosComponent>
+        ).guardarUsuario();
       }
     },
     async guardarCambios() {
       try {
-        const form = document.querySelector(
-          ".form-login"
-        ) as HTMLFormElement | null;
-
-        if (form) {
-          const nombreInput = form.querySelector("#nombre") as HTMLInputElement;
-          const apellidosInput = form.querySelector(
-            "#apellidos"
-          ) as HTMLInputElement;
-          const fechaNacimientoInput = form.querySelector(
-            "#fechaNacimiento"
-          ) as HTMLInputElement;
-          const correoInput = form.querySelector("#correo") as HTMLInputElement;
-          const contrasenaInput = form.querySelector(
-            "#contrasena"
-          ) as HTMLInputElement;
-
-          if (
-            !nombreInput ||
-            !apellidosInput ||
-            !fechaNacimientoInput ||
-            !contrasenaInput ||
-            !correoInput
-          ) {
-            console.error("No se pudieron encontrar los campos.");
-            return;
-          }
-
-          const nombre = nombreInput.value;
-          const apellidos = apellidosInput.value;
-          const fechaNacimiento = fechaNacimientoInput.value;
-          const contrasena = contrasenaInput.value;
-          const correo = correoInput.value;
-
-          if (
-            !nombre ||
-            !apellidos ||
-            !fechaNacimiento ||
-            !contrasena ||
-            !correo
-          ) {
-            console.error("Por favor, ingrese datos válidos.");
-            return;
-          }
-        }
         if (this.usuarioSeleccionado) {
           if (this.nuevoUsuario.ESTATUS === "Activo") {
             this.nuevoUsuario.ESTATUS = 1;
@@ -333,6 +115,107 @@ export default defineComponent({
         console.error("Error al guardar los cambios:", error);
       }
     },
+    resetValidation() {
+      const form = document.querySelector(".form") as HTMLFormElement | null;
+      if (form) {
+        form.classList.remove("was-validated");
+      }
+    },
+    mostrarAlerta(mensaje: string, estilo: string) {
+      this.showAlert = true;
+      this.alertMessage = mensaje;
+      this.alertClass = estilo;
+      setTimeout(() => {
+        this.showAlert = false;
+      }, 3000);
+    },
+    resetModal() {
+      this.nuevoUsuario = {
+        NOMBRE: "",
+        APELLIDOS: "",
+        FECHA_NACIMIENTO: null,
+        CORREO: "",
+        CONTRASENA: "",
+        ESTATUS: 1,
+        ID_ROL: 1,
+      };
+      this.usuarioSeleccionado = null;
+      this.modoEdicion = false;
+      this.titleModal = "";
+      if (this.modal) {
+        this.modal.hide();
+      }
+      this.resetValidation();
+    },
+    initModal() {
+      this.titleModal = "Agregar Usuario";
+      const modalElement = document.getElementById("modal");
+      if (modalElement) {
+        this.modal = new Modal(modalElement);
+        modalElement.addEventListener("hidden.bs.modal", () => {
+          this.resetModal();
+        });
+        this.modal.show();
+      } else {
+        console.error("No se encontró el elemento modal.");
+      }
+    },
+    async cargarUsuarios() {
+      try {
+        const token = localStorage.getItem("token");
+        if (token) {
+          axios.defaults.headers.common["Authorization"] = token;
+          const response = await axios.get(
+            `${import.meta.env.VITE_APP_API_URL}/users/get`
+          );
+          this.usuariosData = response.data.body.map((usuario: Usuario) => {
+            if (usuario.FECHA_NACIMIENTO) {
+              const fechaNacimiento = usuario.FECHA_NACIMIENTO.split("T")[0];
+              usuario.FECHA_NACIMIENTO = fechaNacimiento;
+            } else {
+              console.warn(
+                `Fecha de nacimiento no definida para el usuario con ID: ${usuario.ID}`
+              );
+              usuario.FECHA_NACIMIENTO = "";
+            }
+            usuario.ESTATUS = getStatus(usuario.ESTATUS);
+            return usuario;
+          });
+        } else {
+          console.error("No se encontró el token en localStorage.");
+        }
+      } catch (error) {
+        console.error("Error al cargar los datos de usuarios:", error);
+      }
+    },
+    async editarUsuario(usuario: Usuario) {
+      this.titleModal = "Editar Usuario";
+      this.modoEdicion = true;
+      try {
+        this.usuarioSeleccionado = usuario;
+        const modalElement = document.getElementById("modal") as HTMLElement;
+        if (modalElement) {
+          this.modal = new Modal(modalElement);
+          this.modal.show();
+          this.nuevoUsuario = {
+            NOMBRE: usuario.NOMBRE,
+            APELLIDOS: usuario.APELLIDOS,
+            FECHA_NACIMIENTO: usuario.FECHA_NACIMIENTO,
+            CORREO: usuario.CORREO,
+            CONTRASENA: usuario.CONTRASENA,
+            ESTATUS: usuario.ESTATUS,
+            ID_ROL: usuario.ID_ROL,
+          };
+          modalElement.addEventListener("hidden.bs.modal", () => {
+            this.resetModal();
+          });
+        } else {
+          console.error("Elemento modal no encontrado.");
+        }
+      } catch (error) {
+        console.error("Error al editar el usuario:", error);
+      }
+    },
     mostrarModalEliminar(usuario: Usuario) {
       const token = localStorage.getItem("token");
       if (token) {
@@ -342,7 +225,6 @@ export default defineComponent({
         }
 
         if (usuario.ID === this.idUser) {
-          // Aquí puedes mostrar un mensaje o alguna otra acción, ya que no debería permitir eliminar
           this.mostrarAlerta(
             "No puedes eliminar tu propio usuario",
             "alert alert-warning"
@@ -350,13 +232,13 @@ export default defineComponent({
           return;
         }
       }
-      this.usuarioSeleccionado = usuario; // Establecer el usuario seleccionado para eliminar
+      this.usuarioSeleccionado = usuario;
       const confirmarEliminacionModal = document.getElementById(
         "confirmarEliminacionModal"
       );
       if (confirmarEliminacionModal) {
         this.modalEliminar = new Modal(confirmarEliminacionModal);
-        this.modalEliminar.show(); // Mostrar el modal de confirmación de eliminación
+        this.modalEliminar.show();
       } else {
         console.error(
           "No se encontró el elemento modal de confirmación de eliminación."
@@ -389,22 +271,20 @@ export default defineComponent({
         console.error("Error al eliminar el usuario:", error);
       }
     },
-
     mostrarModalReactivar(usuario: Usuario) {
-      this.usuarioSeleccionado = usuario; // Establecer el usuario seleccionado para reactivar
+      this.usuarioSeleccionado = usuario;
       const confirmarReactivacionModal = document.getElementById(
         "confirmarReactivacionModal"
       );
       if (confirmarReactivacionModal) {
         this.modalReactivar = new Modal(confirmarReactivacionModal);
-        this.modalReactivar.show(); // Mostrar el modal de confirmación de reactivación
+        this.modalReactivar.show();
       } else {
         console.error(
           "No se encontró el elemento modal de confirmación de reactivación."
         );
       }
     },
-
     async reactivarUsuarioConfirmado() {
       try {
         if (this.usuarioSeleccionado) {
@@ -434,33 +314,8 @@ export default defineComponent({
         console.error("Error al reactivar el usuario:", error);
       }
     },
-    async manejarGuardarUsuario() {
-      if (this.modoEdicion) {
-        await this.guardarCambios();
-      } else {
-        await this.guardarUsuario();
-      }
-    },
   },
   mounted() {
     this.cargarUsuarios();
-
-    // Asociar evento submit una sola vez
-    const form = document.querySelector(
-      ".form-login"
-    ) as HTMLFormElement | null;
-    if (form) {
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (!form.checkValidity()) {
-          form.classList.add("was-validated");
-          return;
-        }
-
-        this.manejarGuardarUsuario();
-      });
-    }
   },
 });

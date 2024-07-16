@@ -90,24 +90,22 @@ export default defineComponent({
             this.nuevoCliente.ESTATUS = 2;
           }
 
-          if (this.clienteSeleccionado) {
-            const response = await axios.put(
-              `${import.meta.env.VITE_APP_API_URL}/clientes/update/${
-                this.clienteSeleccionado.ID
-              }`,
-              this.nuevoCliente
+          const response = await axios.put(
+            `${import.meta.env.VITE_APP_API_URL}/clientes/update/${
+              this.clienteSeleccionado.ID
+            }`,
+            this.nuevoCliente
+          );
+          if (response.status === 200) {
+            this.mostrarAlerta(
+              "Cliente editado satisfactoriamente",
+              "alert alert-success"
             );
-            if (response.status === 200) {
-              this.mostrarAlerta(
-                "Cliente editado satisfactoriamente",
-                "alert alert-success"
-              );
-              this.modal.hide();
-              this.resetModal();
-              this.cargarClientes();
-            } else {
-              console.error("Error al editar el cliente:", response.statusText);
-            }
+            this.modal.hide();
+            this.resetModal();
+            this.cargarClientes();
+          } else {
+            console.error("Error al editar el cliente:", response.statusText);
           }
         } else {
           console.error("No hay cliente seleccionado para editar.");
@@ -149,7 +147,7 @@ export default defineComponent({
       this.resetValidation();
     },
     initModal() {
-      this.titleModal = "Agregar Registro";
+      this.titleModal = "Agregar Cliente";
       const modalElement = document.getElementById("modal");
       if (modalElement) {
         this.modal = new Modal(modalElement);
@@ -190,7 +188,7 @@ export default defineComponent({
       }
     },
     async editarCliente(cliente: Cliente) {
-      this.titleModal = "Editar Registro";
+      this.titleModal = "Editar Cliente";
       this.modoEdicion = true;
       try {
         this.clienteSeleccionado = cliente;

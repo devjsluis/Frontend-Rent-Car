@@ -75,122 +75,19 @@
   </div>
 </div>
 
-<div
-  class="modal fade"
-  id="exampleModal"
-  tabindex="-1"
-  aria-labelledby="exampleModalLabel"
-  aria-hidden="true"
-  ref="myModal"
-  @show="resetNuevoUsuario"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">
-          {{ usuarioSeleccionado ? 'Editar Usuario' : 'Agregar Usuario' }}
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-      <form class="form-login needs-validation" novalidate>
-        <div class="modal-body">
-          <div class="mb-3 position-relative">
-            <label for="nombre" class="form-label">Nombre</label>
-            <input
-              type="text"
-              class="form-control"
-              id="nombre"
-              v-model="nuevoUsuario.NOMBRE"
-              required
-            />
-            <div class="invalid-tooltip fw-bolder">
-              Por favor ingrese un nombre válido
-            </div>
-          </div>
-          <div class="mb-3 position-relative">
-            <label for="apellidos" class="form-label">Apellidos</label>
-            <input
-              type="text"
-              class="form-control"
-              id="apellidos"
-              v-model="nuevoUsuario.APELLIDOS"
-              required
-            />
-            <div class="invalid-tooltip fw-bolder">
-              Por favor ingrese unos apellidos válidos
-            </div>
-          </div>
-          <div class="mb-3 position-relative">
-            <label for="fechaNacimiento" class="form-label"
-              >Fecha de Nacimiento</label
-            >
-            <input
-              type="date"
-              class="form-control"
-              id="fechaNacimiento"
-              v-model="nuevoUsuario.FECHA_NACIMIENTO"
-              required
-            />
-            <div class="invalid-tooltip fw-bolder">
-              Por favor ingrese una fecha de nacimiento válida
-            </div>
-          </div>
-          <div class="mb-3 position-relative">
-            <label for="correo" class="form-label">Correo Electrónico</label>
-            <input
-              type="email"
-              class="form-control"
-              id="correo"
-              v-model="nuevoUsuario.CORREO"
-              required
-            />
-            <div class="invalid-tooltip fw-bolder">
-              Por favor ingrese un correo válido
-            </div>
-          </div>
-          <div class="mb-3 position-relative">
-            <label for="contrasena" class="form-label">Contraseña</label>
-            <input
-              type="password"
-              class="form-control"
-              id="contrasena"
-              v-model="nuevoUsuario.CONTRASENA"
-              required
-            />
-            <div class="invalid-tooltip fw-bolder">
-              Por favor ingrese una contraseña válida
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button
-            class="btn btn-secondary"
-            type="button"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          >
-            Cerrar
-          </button>
-          <button
-            v-if="!usuarioSeleccionado"
-            type="submit"
-            class="btn btn-primary"
-          >
-            Guardar
-          </button>
-          <button v-else type="submit" class="btn btn-primary">
-            Guardar Cambios
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+<!-- FORMULARIO -->
+<FormUsuariosComponent
+  ref="formulario"
+  :titleModal="titleModal"
+  :modoEdicion="modoEdicion"
+  :cargarUsuarios="cargarUsuarios"
+  :nuevoUsuario="nuevoUsuario"
+  :usuarioSeleccionado="usuarioSeleccionado"
+  :modal="modal"
+  :manejarGuardarUsuario="manejarGuardarUsuario"
+  :mostrarAlerta="mostrarAlerta"
+  :resetModal="resetModal"
+/>
 
 <div
   class="modal fade"
