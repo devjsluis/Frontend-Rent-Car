@@ -1,5 +1,5 @@
 import { defineComponent } from "vue";
-import axios from "../../../../axiosConfig";
+import axios from "../../../../../axiosConfig";
 import { jwtDecode } from "jwt-decode";
 
 export default defineComponent({

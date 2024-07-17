@@ -3,7 +3,7 @@ import axios from "../../../axiosConfig";
 import { Modal } from "bootstrap";
 import { getStatus } from "../../shared/enums/status.enum";
 import { jwtDecode } from "jwt-decode";
-import FormUsuariosComponent from "./form-usuarios-component/FormUsuariosComponent.vue";
+import FormUsuariosComponent from "./components/form-usuarios-component/FormUsuariosComponent.vue";
 
 interface UsuariosComponentData {
   usuariosData: Usuario[];
