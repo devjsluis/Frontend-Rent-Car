@@ -232,6 +232,7 @@ export default defineComponent({
     async eliminarClienteConfirmado() {
       try {
         if (this.clienteSeleccionado) {
+          this.deactivateIncompleteRents();
           const response = await axios.delete(
             `${import.meta.env.VITE_APP_API_URL}/clientes/delete/${
               this.clienteSeleccionado.ID
@@ -255,6 +256,52 @@ export default defineComponent({
         console.error("Error al eliminar el cliente:", error);
       }
     },
+    async deactivateIncompleteRents() {
+      try {
+        if (this.clienteSeleccionado) {
+          const response = await axios.delete(
+            `${import.meta.env.VITE_APP_API_URL}/rent/deactivateRents/${
+              this.clienteSeleccionado.ID
+            }`
+          );
+          if (response.status !== 200) {
+            console.error(
+              "Error al desactivar rentas incompletas:",
+              response.statusText
+            );
+          }
+        } else {
+          console.error(
+            "No hay cliente seleccionado para desactivar rentas incompletas."
+          );
+        }
+      } catch (error) {
+        console.error("Error al desactivar rentas incompletas:", error);
+      }
+    },
+    async reactivateIncompleteRents() {
+      try {
+        if (this.clienteSeleccionado) {
+          const response = await axios.put(
+            `${import.meta.env.VITE_APP_API_URL}/rent/reactivateRents/${
+              this.clienteSeleccionado.ID
+            }`
+          );
+          if (response.status !== 200) {
+            console.error(
+              "Error al reactivar registro de rentas:",
+              response.statusText
+            );
+          }
+        } else {
+          console.error(
+            "No hay cliente seleccionado para reactivar registros de rentas"
+          );
+        }
+      } catch (error) {
+        console.error("Error al reactivar rentas incompletas:", error);
+      }
+    },
     mostrarModalReactivar(cliente: Cliente) {
       this.clienteSeleccionado = cliente;
       const confirmarReactivacionModal = document.getElementById(
@@ -272,6 +319,7 @@ export default defineComponent({
     async reactivarClienteConfirmado() {
       try {
         if (this.clienteSeleccionado) {
+          this.reactivateIncompleteRents();
           const response = await axios.put(
             `${import.meta.env.VITE_APP_API_URL}/clientes/reactivate/${
               this.clienteSeleccionado.ID

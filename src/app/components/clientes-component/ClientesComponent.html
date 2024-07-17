@@ -156,8 +156,9 @@
       </div>
       <div class="modal-body">
         ¿Está seguro que desea eliminar al cliente {{ clienteSeleccionado ?
-        clienteSeleccionado.NOMBRE + " " + clienteSeleccionado.APELLIDOS : ''
-        }}?
+        clienteSeleccionado.NOMBRE + " " + clienteSeleccionado.APELLIDOS : '' }}
+        ? En caso de eliminarlo también se borrarán sus registros de renta
+        activos
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
