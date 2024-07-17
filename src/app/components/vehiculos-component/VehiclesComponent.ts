@@ -2,6 +2,7 @@ import { defineComponent } from "vue";
 import axios from "../../../axiosConfig";
 import { Modal } from "bootstrap";
 import { getStatus } from "../../shared/enums/status.enum";
+import FormVehiclesComponent from "./components/form-vehicles-component/FormVehiclesComponent.vue";
 
 interface VehiclesComponentData {
   nuevoCatalogo: NuevoCatalogo;
@@ -20,6 +21,7 @@ interface VehiclesComponentData {
   alertClass: string;
   catalogoSeleccionado: Catalog | null;
   modoEdicion: boolean;
+  titleModal: string;
 }
 
 interface Catalog {
@@ -37,7 +39,7 @@ interface NuevoCatalogo {
 
 interface Vehicle {
   ID: number;
-  FECHA_ALTA: string;
+  FECHA_ALTA: string | null;
   ESTATUS: number | string;
   ID_TIPO_VEHICULO: number;
   ID_MARCA: number;
@@ -47,7 +49,7 @@ interface Vehicle {
 }
 
 interface NuevoVehicle {
-  FECHA_ALTA: string;
+  FECHA_ALTA: string | null;
   ESTATUS: number | string;
   ID_TIPO_VEHICULO: number | string | null;
   ID_MARCA: number | string | null;
@@ -58,6 +60,9 @@ interface NuevoVehicle {
 
 export default defineComponent({
   name: "VehiclesComponent",
+  components: {
+    FormVehiclesComponent,
+  },
   data(): VehiclesComponentData {
     return {
       vehiclesData: [],
@@ -87,22 +92,24 @@ export default defineComponent({
         ID_CATALOGO: 1,
       } as NuevoCatalogo,
       modoEdicion: false,
+      titleModal: "",
     };
   },
   methods: {
+    async manejarGuardarVehiculo() {
+      if (this.modoEdicion) {
+        await this.guardarCambios();
+      } else {
+        await (
+          this.$refs.formulario as InstanceType<typeof FormVehiclesComponent>
+        ).guardarVehiculo();
+      }
+    },
     resetValidation() {
       const form = document.querySelector(".form") as HTMLFormElement | null;
       if (form) {
         form.classList.remove("was-validated");
       }
-    },
-    mostrarAlerta(mensaje: string, estilo: string) {
-      this.showAlert = true;
-      this.alertMessage = mensaje;
-      this.alertClass = estilo;
-      setTimeout(() => {
-        this.showAlert = false;
-      }, 3000);
     },
     resetModal() {
       this.nuevoVehicle = {
@@ -116,22 +123,86 @@ export default defineComponent({
       };
       this.vehicleSeleccionado = null;
       this.modoEdicion = false;
+      this.titleModal = "";
       if (this.modal) {
-        this.modal.hide(); // Ocultar el modal si está abierto
+        this.modal.hide();
       }
       this.resetValidation();
     },
     initModal() {
-      const modalElement = document.getElementById("exampleModal");
+      this.titleModal = "Agregar vehículo";
+      const modalElement = document.getElementById("modal");
       if (modalElement) {
         this.modal = new Modal(modalElement);
         modalElement.addEventListener("hidden.bs.modal", () => {
-          // Resetear los datos cuando se cierra el modal
           this.resetModal();
         });
-        this.modal.show(); // Mostrar el modal
+        this.modal.show();
       } else {
         console.error("No se encontró el elemento modal.");
+      }
+    },
+    async editarVehiculo(vehiculo: Vehicle) {
+      this.modoEdicion = true;
+      this.titleModal = "Editar vehículo";
+      try {
+        this.vehicleSeleccionado = vehiculo;
+        const modalElement = document.getElementById("modal") as HTMLElement;
+        if (modalElement) {
+          this.modal = new Modal(modalElement);
+          this.modal.show();
+          this.nuevoVehicle = {
+            FECHA_ALTA: vehiculo.FECHA_ALTA,
+            ESTATUS: vehiculo.ESTATUS,
+            ID_TIPO_VEHICULO: vehiculo.ID_TIPO_VEHICULO,
+            ID_MARCA: vehiculo.ID_MARCA,
+            ID_MODELO: vehiculo.ID_MODELO,
+            ID_ANIO: vehiculo.ID_ANIO,
+            NOTAS: vehiculo.NOTAS,
+          };
+          modalElement.addEventListener("hidden.bs.modal", () => {
+            this.resetModal();
+          });
+        } else {
+          console.error("Elemento modal no encontrado.");
+        }
+      } catch (error) {
+        console.error("Error al editar el vehículo:", error);
+      }
+    },
+    async guardarCambios() {
+      try {
+        if (this.vehicleSeleccionado) {
+          if (this.nuevoVehicle.ESTATUS === "Activo") {
+            this.nuevoVehicle.ESTATUS = 1;
+          } else if (this.nuevoVehicle.ESTATUS === "Inactivo") {
+            this.nuevoVehicle.ESTATUS = 0;
+          } else if (this.nuevoVehicle.ESTATUS === "Indefinido") {
+            this.nuevoVehicle.ESTATUS = 2;
+          }
+
+          const response = await axios.put(
+            `${import.meta.env.VITE_APP_API_URL}/vehiculos/update/${
+              this.vehicleSeleccionado.ID
+            }`,
+            this.nuevoVehicle
+          );
+          if (response.status === 200) {
+            this.mostrarAlerta(
+              "Vehículo editado satisfactoriamente",
+              "alert alert-success"
+            );
+            this.modal.hide();
+            this.resetModal();
+            this.cargarVehiculos();
+          } else {
+            console.error("Error al editar el vehículo:", response.statusText);
+          }
+        } else {
+          console.error("No hay vehículo seleccionado para editar.");
+        }
+      } catch (error) {
+        console.error("Error al guardar los cambios:", error);
       }
     },
     async cargarVehiculos() {
@@ -143,7 +214,7 @@ export default defineComponent({
             `${import.meta.env.VITE_APP_API_URL}/vehiculos/getVehiclesAll`
           );
           this.vehiclesData = response.data.body.map((vehicle: Vehicle) => {
-            if (vehicle.FECHA_ALTA !== undefined) {
+            if (vehicle.FECHA_ALTA) {
               const fechaAlta = vehicle.FECHA_ALTA.split("T")[0];
               vehicle.FECHA_ALTA = fechaAlta;
             } else {
@@ -243,199 +314,31 @@ export default defineComponent({
         console.error("Error al cargar los datos de catálogos:", error);
       }
     },
-    async guardarVehiculo() {
-      try {
-        const form = document.querySelector(".form") as HTMLFormElement | null;
-
-        if (form) {
-          const fechaAltaInput = form.querySelector(
-            "#fechaAlta"
-          ) as HTMLInputElement;
-          const idTipoSelect = form.querySelector(
-            "#idTipo"
-          ) as HTMLSelectElement;
-          const idMarcaSelect = form.querySelector(
-            "#marca"
-          ) as HTMLSelectElement;
-          const idModeloSelect = form.querySelector(
-            "#modelo"
-          ) as HTMLSelectElement;
-          const idAnioSelect = form.querySelector("#anio") as HTMLSelectElement;
-
-          if (
-            !fechaAltaInput ||
-            !idTipoSelect ||
-            !idMarcaSelect ||
-            !idModeloSelect ||
-            !idAnioSelect
-          ) {
-            console.error("No se pudieron encontrar los campos.");
-            return;
-          }
-
-          const fechaAlta = fechaAltaInput.value;
-          const idTipo = idTipoSelect.value;
-          const idMarca = idMarcaSelect.value;
-          const idModelo = idModeloSelect.value;
-          const idAnio = idAnioSelect.value;
-
-          if (!fechaAlta || !idTipo || !idMarca || !idModelo || !idAnio) {
-            console.error("Por favor, ingrese datos válidos.");
-            return;
-          }
-        }
-        const response = await axios.post(
-          `${import.meta.env.VITE_APP_API_URL}/vehiculos/create`,
-          this.nuevoVehicle
-        );
-        if (response.status === 201) {
-          this.mostrarAlerta(
-            "Vehículo creado satisfactoriamente",
-            "alert alert-success"
-          );
-          if (this.modal) {
-            this.modal.hide();
-            this.resetModal();
-            const modalBackdrop = document.querySelector(".modal-backdrop"); // Seleccionar el elemento con la clase 'modal-backdrop'
-            if (modalBackdrop) {
-              modalBackdrop.parentNode?.removeChild(modalBackdrop); // Eliminar el elemento del DOM
-            }
-          } else {
-            console.log("El modal no está inicializado correctamente");
-          }
-
-          this.nuevoVehicle = {
-            FECHA_ALTA: new Date().toISOString().slice(0, 10),
-            ESTATUS: 1,
-            ID_TIPO_VEHICULO: "",
-            ID_MARCA: "",
-            ID_MODELO: "",
-            ID_ANIO: "",
-            NOTAS: "",
-          };
-          this.cargarVehiculos();
-        } else {
-          console.error("Error al crear el vehículo:", response.statusText);
-        }
-      } catch (error) {
-        console.error("Error al guardar el vehículo:", error);
-      }
-    },
-    async editarVehiculo(vehiculo: Vehicle) {
-      this.modoEdicion = true;
-      try {
-        this.vehicleSeleccionado = vehiculo; // Guarda el vehículo seleccionado para edición
-        const modalElement = document.getElementById(
-          "exampleModal"
-        ) as HTMLElement;
-        if (modalElement) {
-          this.modal = new Modal(modalElement);
-          this.modal.show();
-          this.nuevoVehicle = {
-            FECHA_ALTA: vehiculo.FECHA_ALTA,
-            ESTATUS: vehiculo.ESTATUS,
-            ID_TIPO_VEHICULO: vehiculo.ID_TIPO_VEHICULO,
-            ID_MARCA: vehiculo.ID_MARCA,
-            ID_MODELO: vehiculo.ID_MODELO,
-            ID_ANIO: vehiculo.ID_ANIO,
-            NOTAS: vehiculo.NOTAS,
-          };
-          modalElement.addEventListener("hidden.bs.modal", () => {
-            // Resetear los datos cuando se cierra el modal
-            this.resetModal();
-          });
-        } else {
-          console.error("Elemento modal no encontrado.");
-        }
-      } catch (error) {
-        console.error("Error al editar el vehículo:", error);
-      }
-    },
-    async guardarCambios() {
-      try {
-        const form = document.querySelector(".form") as HTMLFormElement | null;
-
-        if (form) {
-          const fechaAltaInput = form.querySelector(
-            "#fechaAlta"
-          ) as HTMLInputElement;
-          const idTipoSelect = form.querySelector(
-            "#idTipo"
-          ) as HTMLSelectElement;
-          const idMarcaSelect = form.querySelector(
-            "#marca"
-          ) as HTMLSelectElement;
-          const idModeloSelect = form.querySelector(
-            "#modelo"
-          ) as HTMLSelectElement;
-          const idAnioSelect = form.querySelector("#anio") as HTMLSelectElement;
-
-          if (
-            !fechaAltaInput ||
-            !idTipoSelect ||
-            !idMarcaSelect ||
-            !idModeloSelect ||
-            !idAnioSelect
-          ) {
-            console.error("No se pudieron encontrar los campos.");
-            return;
-          }
-
-          const fechaAlta = fechaAltaInput.value;
-          const idTipo = idTipoSelect.value;
-          const idMarca = idMarcaSelect.value;
-          const idModelo = idModeloSelect.value;
-          const idAnio = idAnioSelect.value;
-
-          if (!fechaAlta || !idTipo || !idMarca || !idModelo || !idAnio) {
-            console.error("Por favor, ingrese datos válidos.");
-            return;
-          }
-        }
-        if (this.vehicleSeleccionado) {
-          if (this.nuevoVehicle.ESTATUS === "Activo") {
-            this.nuevoVehicle.ESTATUS = 1;
-          } else if (this.nuevoVehicle.ESTATUS === "Inactivo") {
-            this.nuevoVehicle.ESTATUS = 0;
-          } else if (this.nuevoVehicle.ESTATUS === "Indefinido") {
-            this.nuevoVehicle.ESTATUS = 2;
-          }
-
-          const response = await axios.put(
-            `${import.meta.env.VITE_APP_API_URL}/vehiculos/update/${
-              this.vehicleSeleccionado.ID
-            }`,
-            this.nuevoVehicle
-          );
-          if (response.status === 200) {
-            this.mostrarAlerta(
-              "Vehículo editado satisfactoriamente",
-              "alert alert-success"
-            );
-            this.modal.hide();
-            this.resetModal();
-            this.cargarVehiculos();
-          } else {
-            console.error("Error al editar el vehículo:", response.statusText);
-          }
-        } else {
-          console.error("No hay vehículo seleccionado para editar.");
-        }
-      } catch (error) {
-        console.error("Error al guardar los cambios:", error);
-      }
-    },
     mostrarModalEliminar(vehiculo: Vehicle) {
-      this.vehicleSeleccionado = vehiculo; // Establecer el vehiculo seleccionado para eliminar
+      this.vehicleSeleccionado = vehiculo;
       const confirmarEliminacionModal = document.getElementById(
         "confirmarEliminacionModal"
       );
       if (confirmarEliminacionModal) {
         this.modalEliminar = new Modal(confirmarEliminacionModal);
-        this.modalEliminar.show(); // Mostrar el modal de confirmación de eliminación
+        this.modalEliminar.show();
       } else {
         console.error(
           "No se encontró el elemento modal de confirmación de eliminación."
+        );
+      }
+    },
+    mostrarModalReactivar(vehiculo: Vehicle) {
+      this.vehicleSeleccionado = vehiculo;
+      const confirmarReactivacionModal = document.getElementById(
+        "confirmarReactivacionModal"
+      );
+      if (confirmarReactivacionModal) {
+        this.modalReactivar = new Modal(confirmarReactivacionModal);
+        this.modalReactivar.show();
+      } else {
+        console.error(
+          "No se encontró el elemento modal de confirmación de reactivación."
         );
       }
     },
@@ -468,20 +371,6 @@ export default defineComponent({
         console.error("Error al eliminar el vehiculo:", error);
       }
     },
-    mostrarModalReactivar(vehiculo: Vehicle) {
-      this.vehicleSeleccionado = vehiculo; // Establecer el vehiculo seleccionado para reactivar
-      const confirmarReactivacionModal = document.getElementById(
-        "confirmarReactivacionModal"
-      );
-      if (confirmarReactivacionModal) {
-        this.modalReactivar = new Modal(confirmarReactivacionModal);
-        this.modalReactivar.show(); // Mostrar el modal de confirmación de reactivación
-      } else {
-        console.error(
-          "No se encontró el elemento modal de confirmación de reactivación."
-        );
-      }
-    },
     async reactivarVehiculoConfirmado() {
       try {
         if (this.vehicleSeleccionado) {
@@ -511,12 +400,13 @@ export default defineComponent({
         console.error("Error al reactivar el vehiculo:", error);
       }
     },
-    async manejarGuardarVehiculo() {
-      if (this.modoEdicion) {
-        await this.guardarCambios();
-      } else {
-        await this.guardarVehiculo();
-      }
+    mostrarAlerta(mensaje: string, estilo: string) {
+      this.showAlert = true;
+      this.alertMessage = mensaje;
+      this.alertClass = estilo;
+      setTimeout(() => {
+        this.showAlert = false;
+      }, 3000);
     },
   },
   mounted() {
@@ -525,21 +415,5 @@ export default defineComponent({
     this.cargarMarcas();
     this.cargarModelos();
     this.cargarAnios();
-
-    // Asociar evento submit una sola vez
-    const form = document.querySelector(".form") as HTMLFormElement | null;
-    if (form) {
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-
-        if (!form.checkValidity()) {
-          form.classList.add("was-validated");
-          return;
-        }
-
-        this.manejarGuardarVehiculo();
-      });
-    }
   },
 });

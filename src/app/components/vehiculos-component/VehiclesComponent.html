@@ -1,3 +1,4 @@
+<!-- TABLA -->
 <div class="text-bg-dark col-lg-10 col-md-9 col-sm-8">
   <div class="container-fluid">
     <div class="row">
@@ -72,135 +73,25 @@
   </div>
 </div>
 
-<div
-  class="modal fade"
-  id="exampleModal"
-  tabindex="-1"
-  aria-labelledby="exampleModalLabel"
-  aria-hidden="true"
-  ref="myModal"
-  @show="resetNuevoVehiculo"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">
-          {{ vehicleSeleccionado ? 'Editar Vehículo' : 'Agregar Vehículo' }}
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-      <form class="form needs-validation" novalidate ref="form">
-        <div class="modal-body">
-          <div class="mb-3 position-relative">
-            <label for="fechaAlta" class="form-label">Fecha de alta</label>
-            <input
-              type="date"
-              class="form-control"
-              id="fechaAlta"
-              v-model="nuevoVehicle.FECHA_ALTA"
-              required
-            />
-            <div class="invalid-tooltip fw-bolder">
-              Por favor ingrese una fecha válida
-            </div>
-          </div>
-          <div class="mb-3 position-relative">
-            <label for="idTipo" class="form-label">Tipo de Vehículo</label>
-            <select
-              class="form-select"
-              id="idTipo"
-              v-model="nuevoVehicle.ID_TIPO_VEHICULO"
-              required
-            >
-              <option value="" disabled>Selecciona un tipo de vehículo</option>
-              <option v-for="tipo in tipoVehiculoData" :value="tipo.ID">
-                {{ tipo.DESCRIPCION }}
-              </option>
-            </select>
-          </div>
-          <div class="mb-3 position-relative">
-            <label for="marca" class="form-label">Marca</label>
-            <select
-              class="form-select"
-              id="marca"
-              v-model="nuevoVehicle.ID_MARCA"
-              required
-            >
-              <option value="" disabled>Selecciona una marca</option>
-              <option v-for="marca in marcasData" :value="marca.ID">
-                {{ marca.DESCRIPCION }}
-              </option>
-            </select>
-          </div>
-          <div class="mb-3 position-relative">
-            <label for="modelo" class="form-label">Modelo</label>
-            <select
-              class="form-select"
-              id="modelo"
-              v-model="nuevoVehicle.ID_MODELO"
-              required
-            >
-              <option value="" disabled>Selecciona un modelo</option>
-              <option v-for="modelo in modelosData" :value="modelo.ID">
-                {{ modelo.DESCRIPCION }}
-              </option>
-            </select>
-          </div>
-          <div class="mb-3 position-relative">
-            <label for="anio" class="form-label">Año</label>
-            <select
-              class="form-select"
-              id="anio"
-              v-model="nuevoVehicle.ID_ANIO"
-              required
-            >
-              <option value="" disabled>Selecciona un año</option>
-              <option v-for="anio in aniosData" :value="anio.ID">
-                {{ anio.DESCRIPCION }}
-              </option>
-            </select>
-          </div>
-          <div class="mb-3 position-relative">
-            <label for="notas" class="form-label">Notas</label>
-            <input
-              type="text"
-              class="form-control"
-              id="notas"
-              v-model="nuevoVehicle.NOTAS"
-            />
-          </div>
-        </div>
+<!-- FORMULARIO -->
+<FormVehiclesComponent
+  ref="formulario"
+  :titleModal="titleModal"
+  :modoEdicion="modoEdicion"
+  :cargarVehiculos="cargarVehiculos"
+  :nuevoVehicle="nuevoVehicle"
+  :vehicleSeleccionado="vehicleSeleccionado"
+  :modal="modal"
+  :manejarGuardarVehiculo="manejarGuardarVehiculo"
+  :mostrarAlerta="mostrarAlerta"
+  :resetModal="resetModal"
+  :tipoVehiculoData="tipoVehiculoData"
+  :marcasData="marcasData"
+  :modelosData="modelosData"
+  :aniosData="aniosData"
+/>
 
-        <div class="modal-footer">
-          <button
-            class="btn btn-secondary"
-            type="button"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          >
-            Cerrar
-          </button>
-          <button
-            v-if="!vehicleSeleccionado"
-            type="submit"
-            class="btn btn-primary"
-          >
-            Guardar
-          </button>
-          <button v-else type="submit" class="btn btn-primary">
-            Guardar Cambios
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
+<!-- MODAL REACTIVAR -->
 <div
   class="modal fade"
   id="confirmarReactivacionModal"
@@ -242,6 +133,7 @@
   </div>
 </div>
 
+<!-- MODAL ELIMINAR -->
 <div
   class="modal fade"
   id="confirmarEliminacionModal"
@@ -283,6 +175,7 @@
   </div>
 </div>
 
+<!-- ALERTAS -->
 <div
   v-if="showAlert"
   :class="[alertClass, 'position-fixed', 'top-0', 'start-50', 'translate-middle-x', 'z-index-1000', 'w-300', 'custom-mt', 'text-center', 'rounded-3']"
