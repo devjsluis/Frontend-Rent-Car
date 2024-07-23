@@ -48,6 +48,7 @@
 
           <td>
             <i
+              v-if="decodedToken.rol===1 || (decodedToken.rol===2 && usuario.ID_ROL ===3)"
               class="bi bi-pencil"
               role="button"
               @click="editarUsuario(usuario)"
@@ -58,7 +59,7 @@
               class="bi bi-trash"
               role="button"
               @click="mostrarModalEliminar(usuario)"
-              v-if="usuario.ESTATUS === 'Activo'|usuario.ESTATUS === 'Indefinido'"
+              v-if="(decodedToken.rol === 1 || (decodedToken.rol === 2 && usuario.ID_ROL === 3)) && (usuario.ESTATUS === 'Activo' || usuario.ESTATUS === 'Indefinido')"
             ></i>
           </td>
           <td>
@@ -66,7 +67,7 @@
               class="bi bi-cloud-arrow-up-fill"
               role="button"
               @click="mostrarModalReactivar(usuario)"
-              v-if="usuario.ESTATUS === 'Inactivo'"
+              v-if="(decodedToken.rol === 1 || (decodedToken.rol === 2 && usuario.ID_ROL === 3)) && usuario.ESTATUS === 'Inactivo'"
             ></i>
           </td>
         </tr>

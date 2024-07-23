@@ -2,8 +2,24 @@ import { defineComponent } from "vue";
 import axios from "../../../../../axiosConfig";
 import { jwtDecode } from "jwt-decode";
 
+interface DecodedToken {
+  rol: number;
+}
+
 export default defineComponent({
   name: "FormUsuariosComponent",
+  data() {
+    return {
+      decodedToken: null as DecodedToken | null,
+      rolesData: [
+        { ID: 1, NOMBRE: "Administrador" },
+        { ID: 2, NOMBRE: "Gerente" },
+        { ID: 3, NOMBRE: "Vendedor" },
+      ],
+      filteredRoles: [{}],
+    };
+  },
+
   props: {
     titleModal: String,
     modoEdicion: Boolean,
@@ -80,8 +96,25 @@ export default defineComponent({
         console.error("Error al guardar el usuario:", error);
       }
     },
+    decodeToken() {
+      const token = localStorage.getItem("token");
+      if (token) {
+        this.decodedToken = jwtDecode(token);
+        this.filterRoles();
+      } else {
+        console.error("No token found in localStorage");
+      }
+    },
+    filterRoles() {
+      if (this.decodedToken && this.decodedToken.rol !== 1) {
+        this.filteredRoles = this.rolesData.filter((rol) => rol.ID === 3);
+      } else {
+        this.filteredRoles = this.rolesData;
+      }
+    },
   },
   mounted() {
     this.iniciarFormulario();
+    this.decodeToken();
   },
 });

@@ -5,6 +5,10 @@ import { getStatus } from "../../shared/enums/status.enum";
 import { jwtDecode } from "jwt-decode";
 import FormUsuariosComponent from "./components/form-usuarios-component/FormUsuariosComponent.vue";
 
+interface DecodedToken {
+  rol: number;
+}
+
 interface UsuariosComponentData {
   usuariosData: Usuario[];
   nuevoUsuario: NuevoUsuario;
@@ -18,6 +22,7 @@ interface UsuariosComponentData {
   modoEdicion: boolean;
   idUser: any;
   titleModal: string;
+  decodedToken: DecodedToken | null;
 }
 
 interface Usuario {
@@ -38,7 +43,7 @@ interface NuevoUsuario {
   CORREO: string;
   CONTRASENA: string;
   ESTATUS: number | string;
-  ID_ROL: number;
+  ID_ROL: number | string;
 }
 
 export default defineComponent({
@@ -48,6 +53,7 @@ export default defineComponent({
   },
   data(): UsuariosComponentData {
     return {
+      decodedToken: null as DecodedToken | null,
       usuariosData: [],
       modal: null,
       modalReactivar: null,
@@ -60,7 +66,7 @@ export default defineComponent({
         CORREO: "",
         CONTRASENA: "",
         ESTATUS: 1,
-        ID_ROL: 1,
+        ID_ROL: "",
       } as NuevoUsuario,
       showAlert: false,
       alertMessage: "",
@@ -71,6 +77,14 @@ export default defineComponent({
     };
   },
   methods: {
+    decodeToken() {
+      const token = localStorage.getItem("token");
+      if (token) {
+        this.decodedToken = jwtDecode(token);
+      } else {
+        console.error("No token found in localStorage");
+      }
+    },
     async manejarGuardarUsuario() {
       if (this.modoEdicion) {
         await this.guardarCambios();
@@ -137,7 +151,7 @@ export default defineComponent({
         CORREO: "",
         CONTRASENA: "",
         ESTATUS: 1,
-        ID_ROL: 1,
+        ID_ROL: "",
       };
       this.usuarioSeleccionado = null;
       this.modoEdicion = false;
@@ -317,5 +331,6 @@ export default defineComponent({
   },
   mounted() {
     this.cargarUsuarios();
+    this.decodeToken();
   },
 });

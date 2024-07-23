@@ -5,7 +5,6 @@
   aria-labelledby="modalLabel"
   aria-hidden="true"
   ref="myModal"
-  @show="resetNuevoUsuario"
 >
   <div class="modal-dialog">
     <div class="modal-content">
@@ -20,6 +19,23 @@
       </div>
       <form class="form needs-validation" novalidate>
         <div class="modal-body">
+          <div class="mb-3 position-relative">
+            <label for="idRol" class="form-label">Rol</label>
+            <select
+              class="form-select"
+              id="idRol"
+              v-model="nuevoUsuario.ID_ROL"
+              required
+            >
+              <option value="" disabled>Selecciona un rol</option>
+              <option v-for="rol in filteredRoles" :value="rol.ID">
+                {{ rol.NOMBRE }}
+              </option>
+            </select>
+            <div class="invalid-tooltip fw-bolder">
+              Por favor seleccione un rol
+            </div>
+          </div>
           <div class="mb-3 position-relative">
             <label for="nombre" class="form-label">Nombre</label>
             <input

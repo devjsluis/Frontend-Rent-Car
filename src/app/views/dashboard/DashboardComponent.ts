@@ -36,6 +36,7 @@ interface DashboardComponentData {
   cropper: Cropper | null;
   imageURL: string | null;
   profileImageUrl: string;
+  rol: number | null;
 }
 
 interface ListItem {
@@ -130,9 +131,21 @@ export default defineComponent({
       croppedImage: null,
       cropper: null as Cropper | null,
       imageURL: "",
+      rol: null,
     };
   },
   computed: {
+    filteredItems() {
+      return this.items.filter((item) => {
+        if (this.rol === 3) {
+          return !["Dashboard", "Usuarios", "Catálogos", "Vehículos"].includes(
+            item.label
+          );
+        } else {
+          return true;
+        }
+      });
+    },
     isPrincipalActive() {
       return this.items.some(
         (item) => item.label === "Dashboard" && item.active
@@ -193,6 +206,7 @@ export default defineComponent({
         if (decodedToken && decodedToken.nombre) {
           this.userName = decodedToken.nombre;
           this.idUser = decodedToken.id;
+          this.rol = decodedToken.rol;
         } else {
           console.error("Token JWT no contiene información de usuario");
         }
