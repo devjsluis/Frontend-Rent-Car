@@ -3,14 +3,16 @@ import { initializeApp } from "firebase/app";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCNn1iYsA1qHBXERrb8HR4xMQbvObKyr54",
-  authDomain: "rent-car-vue.firebaseapp.com",
-  projectId: "rent-car-vue",
-  storageBucket: "rent-car-vue.appspot.com",
-  messagingSenderId: "846401037277",
-  appId: "1:846401037277:web:9dddaf06592bd19a668c34",
-  measurementId: "G-9N92EZKRGC",
+  apiKey: import.meta.env.VITE_apiKey,
+  authDomain: import.meta.env.VITE_authDomain,
+  projectId: import.meta.env.VITE_projectId,
+  storageBucket: import.meta.env.VITE_storageBucket,
+  messagingSenderId: import.meta.env.VITE_messagingSenderId,
+  appId: import.meta.env.VITE_appId,
+  measurementId: import.meta.env.VITE_measurementId,
 };
+
+console.log(firebaseConfig);
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
