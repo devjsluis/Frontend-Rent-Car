@@ -9,7 +9,7 @@ export const useAuthStore = defineStore("auth", {
 
 export function authGuard(
   to: RouteLocationNormalized,
-  from: RouteLocationNormalized,
+  _from: RouteLocationNormalized,
   next: NavigationGuardNext
 ) {
   const authStore = useAuthStore();
