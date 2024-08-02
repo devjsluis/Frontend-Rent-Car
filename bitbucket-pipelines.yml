@@ -1,0 +1,21 @@
+pipelines:
+  branches:
+    dev:
+      - step:
+          name: Checkout code
+          image: node:20.13.1
+          caches:
+            - node
+          script:
+            - npm install
+            - npm run build
+          services:
+            - docker
+
+definitions:
+  caches:
+    node: ~/.npm
+    
+  services:
+    docker:
+      memory: 1024
