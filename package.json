@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "pull-env": "npx dotenv-vault@latest pull"
   },
   "dependencies": {
     "@types/jwt-decode": "^3.1.0",
