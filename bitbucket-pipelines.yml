@@ -14,9 +14,9 @@ pipelines:
             
     main:
       - step:
-        name:  Push to VPS
-        image: node:20.13.1
-        caches:
+          name:  Push to VPS
+          image: node:20.13.1
+          caches:
             - node
           script:
             - echo "Setting up SSH"
