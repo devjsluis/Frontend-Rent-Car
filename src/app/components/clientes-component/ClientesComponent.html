@@ -1,0 +1,186 @@
+<!-- TABLA -->
+<div class="text-bg-dark col-lg-10 col-md-9 col-sm-8">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col">
+        <h2 class="d-inline-block px-5 pt-3">Clientes</h2>
+      </div>
+      <div class="col d-flex align-items-center justify-content-center">
+        <div class="d-flex flex-grow-1"></div>
+      </div>
+      <div class="col d-flex align-items-center justify-content-end mx-5">
+        <div class="col d-flex align-items-center justify-content-end mx-2">
+          <button type="button" class="btn btn-primary" @click="initModal()">
+            Agregar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr class="mx-5 my-2" />
+  <div class="table-container px-5">
+    <table class="table table-dark table-striped table-sm">
+      <thead class="sticky-header">
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Nombre</th>
+          <th scope="col">Apellidos</th>
+          <th scope="col">Fecha de nacimiento</th>
+          <th scope="col">Teléfono</th>
+          <th scope="col">Correo</th>
+          <th scope="col">Estatus</th>
+          <th scope="col">Usuario Alta</th>
+          <th scope="col">Editar</th>
+          <th scope="col">Eliminar</th>
+          <th scope="col">Restaurar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="cliente in clientesData" :key="cliente.ID">
+          <td>{{ cliente.ID }}</td>
+          <td>{{ cliente.NOMBRE }}</td>
+          <td>{{ cliente.APELLIDOS }}</td>
+          <td>{{ cliente.FECHA_NACIMIENTO }}</td>
+          <td>{{ cliente.TELEFONO }}</td>
+          <td>{{ cliente.CORREO }}</td>
+          <td>{{ cliente.ESTATUS }}</td>
+          <td>
+            {{ cliente.NOMBRE_USUARIO_ALTA + " " +
+            cliente.APELLIDO_USUARIO_ALTA}}
+          </td>
+          <td>
+            <i
+              class="bi bi-pencil"
+              role="button"
+              @click="editarCliente(cliente)"
+            ></i>
+          </td>
+          <td>
+            <i
+              class="bi bi-trash"
+              role="button"
+              @click="mostrarModalEliminar(cliente)"
+              v-if="cliente.ESTATUS === 'Activo'|cliente.ESTATUS === 'Indefinido'"
+            ></i>
+          </td>
+          <td>
+            <i
+              class="bi bi-cloud-arrow-up-fill"
+              role="button"
+              @click="mostrarModalReactivar(cliente)"
+              v-if="cliente.ESTATUS === 'Inactivo'"
+            ></i>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- FORMULARIO -->
+<FormClientesComponent
+  ref="formulario"
+  :titleModal="titleModal"
+  :modoEdicion="modoEdicion"
+  :cargarClientes="cargarClientes"
+  :nuevoCliente="nuevoCliente"
+  :clienteSeleccionado="clienteSeleccionado"
+  :modal="modal"
+  :manejarGuardarCliente="manejarGuardarCliente"
+  :mostrarAlerta="mostrarAlerta"
+  :resetModal="resetModal"
+/>
+
+<!-- MODAL REACTIVAR -->
+<div
+  class="modal fade"
+  id="confirmarReactivacionModal"
+  tabindex="-1"
+  aria-labelledby="confirmarReactivacionModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmarReactivacionModalLabel">
+          Confirmar Reactivación
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro de querer reactivar al cliente {{ clienteSeleccionado ?
+        clienteSeleccionado.NOMBRE + " " + clienteSeleccionado.APELLIDOS : ''
+        }}?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          @click="reactivarClienteConfirmado"
+        >
+          Reactivar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ELIMINAR -->
+<div
+  class="modal fade"
+  id="confirmarEliminacionModal"
+  tabindex="-1"
+  aria-labelledby="confirmarEliminacionModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmarEliminacionModalLabel">
+          Confirmar Eliminación
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        ¿Está seguro que desea eliminar al cliente {{ clienteSeleccionado ?
+        clienteSeleccionado.NOMBRE + " " + clienteSeleccionado.APELLIDOS : '' }}
+        ? En caso de eliminarlo también se borrarán sus registros de renta
+        activos
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          @click="eliminarClienteConfirmado"
+        >
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ALERTAS -->
+<div
+  v-if="showAlert"
+  :class="[alertClass, 'position-fixed', 'top-0', 'start-50', 'translate-middle-x', 'z-index-1000', 'w-300', 'custom-mt', 'text-center', 'rounded-3']"
+  role="alert"
+>
+  {{ alertMessage }}
+</div>

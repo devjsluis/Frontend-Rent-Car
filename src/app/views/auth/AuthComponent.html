@@ -12,28 +12,36 @@
       <label for="emailId" class="form-label text-white"
         >Correo electrónico</label
       >
-      <input
-        type="email"
-        id="emailId"
-        class="form-control form-control-lg text-truncate bg-transparent text-white border-white placeholder-white"
-        placeholder="Ingrese un correo electrónico"
-        required
-      />
-      <div class="invalid-tooltip fw-bolder">
-        Por favor ingrese un correo electrónico válido.
+      <div class="cont d-flex align-items-center row me-1 ms-1">
+        <i class="span bi bi-person-fill fs-4 text-white"></i>
+        <input
+          type="email"
+          id="emailId"
+          class="inputs col form-control form-control-lg text-truncate bg-transparent text-white border-white placeholder-white d-inline-block"
+          placeholder="Ingrese un correo electrónico"
+          required
+        />
+        <br />
+        <div class="invalid-tooltip fw-bolder col-12">
+          Por favor ingrese un correo electrónico válido.
+        </div>
       </div>
     </div>
     <div class="mt-4 mb-4 position-relative">
       <label for="passwordId" class="form-label text-white">Contraseña</label>
-      <input
-        type="password"
-        id="passwordId"
-        class="form-control form-control-lg text-truncate bg-transparent text-white border-white placeholder-white"
-        placeholder="Ingrese una contraseña"
-        required
-      />
-      <div class="invalid-tooltip fw-bolder">
-        Por favor ingrese una contraseña válida.
+      <div class="cont d-flex align-items-center row me-1 ms-1">
+        <i class="span bi bi-lock fs-4 text-white"></i>
+        <input
+          type="password"
+          id="passwordId"
+          class="inputs col form-control form-control-lg text-truncate bg-transparent text-white border-white placeholder-white d-inline-block"
+          placeholder="Ingrese una contraseña"
+          required
+        />
+        <br />
+        <div class="invalid-tooltip fw-bolder">
+          Por favor ingrese una contraseña válida.
+        </div>
       </div>
     </div>
     <div class="mt-4 mb-3 text-center">

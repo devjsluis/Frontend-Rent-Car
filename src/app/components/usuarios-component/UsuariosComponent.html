@@ -1,0 +1,181 @@
+<div class="text-bg-dark col-lg-10 col-md-9 col-sm-8">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col">
+        <h2 class="d-inline-block px-5 pt-3">Usuarios</h2>
+      </div>
+      <div class="col d-flex align-items-center justify-content-center">
+        <div class="d-flex flex-grow-1"></div>
+      </div>
+      <div class="col d-flex align-items-center justify-content-end mx-5">
+        <div class="col d-flex align-items-center justify-content-end mx-2">
+          <button type="button" class="btn btn-primary" @click="initModal()">
+            Agregar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr class="mx-5 my-2" />
+  <div class="table-container px-5">
+    <table class="table table-dark table-striped table-sm">
+      <thead class="sticky-header">
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Nombre</th>
+          <th scope="col">Apellidos</th>
+          <th scope="col">Fecha de nacimiento</th>
+          <th scope="col">Correo</th>
+          <th scope="col">Estatus</th>
+          <th scope="col">Rol</th>
+          <th scope="col">Editar</th>
+          <th scope="col">Eliminar</th>
+          <th scope="col">Restaurar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="usuario in usuariosData" :key="usuario.ID">
+          <td>{{ usuario.ID }}</td>
+          <td>{{ usuario.NOMBRE }}</td>
+          <td>{{ usuario.APELLIDOS }}</td>
+          <td>{{ usuario.FECHA_NACIMIENTO }}</td>
+          <td>{{ usuario.CORREO }}</td>
+          <td>{{ usuario.ESTATUS }}</td>
+          <td>
+            {{ usuario.ID_ROL === 1 ? 'Administrador' : (usuario.ID_ROL === 2 ?
+            'Gerente' : (usuario.ID_ROL === 3 ? 'Vendedor' : 'Desconocido')) }}
+          </td>
+
+          <td>
+            <i
+              v-if="decodedToken.rol===1 || (decodedToken.rol===2 && usuario.ID_ROL ===3)"
+              class="bi bi-pencil"
+              role="button"
+              @click="editarUsuario(usuario)"
+            ></i>
+          </td>
+          <td>
+            <i
+              class="bi bi-trash"
+              role="button"
+              @click="mostrarModalEliminar(usuario)"
+              v-if="(decodedToken.rol === 1 || (decodedToken.rol === 2 && usuario.ID_ROL === 3)) && (usuario.ESTATUS === 'Activo' || usuario.ESTATUS === 'Indefinido')"
+            ></i>
+          </td>
+          <td>
+            <i
+              class="bi bi-cloud-arrow-up-fill"
+              role="button"
+              @click="mostrarModalReactivar(usuario)"
+              v-if="(decodedToken.rol === 1 || (decodedToken.rol === 2 && usuario.ID_ROL === 3)) && usuario.ESTATUS === 'Inactivo'"
+            ></i>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- FORMULARIO -->
+<FormUsuariosComponent
+  ref="formulario"
+  :titleModal="titleModal"
+  :modoEdicion="modoEdicion"
+  :cargarUsuarios="cargarUsuarios"
+  :nuevoUsuario="nuevoUsuario"
+  :usuarioSeleccionado="usuarioSeleccionado"
+  :modal="modal"
+  :manejarGuardarUsuario="manejarGuardarUsuario"
+  :mostrarAlerta="mostrarAlerta"
+  :resetModal="resetModal"
+/>
+
+<div
+  class="modal fade"
+  id="confirmarReactivacionModal"
+  tabindex="-1"
+  aria-labelledby="confirmarReactivacionModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmarReactivacionModalLabel">
+          Confirmar Reactivación
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro de querer reactivar al usuario {{ usuarioSeleccionado ?
+        usuarioSeleccionado.NOMBRE + " " + usuarioSeleccionado.APELLIDOS : ''
+        }}?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          @click="reactivarUsuarioConfirmado"
+        >
+          Reactivar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="confirmarEliminacionModal"
+  tabindex="-1"
+  aria-labelledby="confirmarEliminacionModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmarEliminacionModalLabel">
+          Confirmar Eliminación
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        ¿Está seguro que desea eliminar al usuario {{ usuarioSeleccionado ?
+        usuarioSeleccionado.NOMBRE + " " + usuarioSeleccionado.APELLIDOS : ''
+        }}?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          @click="eliminarUsuarioConfirmado"
+        >
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  v-if="showAlert"
+  :class="[alertClass, 'position-fixed', 'top-0', 'start-50', 'translate-middle-x', 'z-index-1000', 'w-300', 'custom-mt', 'text-center', 'rounded-3']"
+  role="alert"
+>
+  {{ alertMessage }}
+</div>

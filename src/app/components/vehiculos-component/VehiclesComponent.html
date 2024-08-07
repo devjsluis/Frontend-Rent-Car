@@ -1,0 +1,185 @@
+<!-- TABLA -->
+<div class="text-bg-dark col-lg-10 col-md-9 col-sm-8">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col">
+        <h2 class="d-inline-block px-5 pt-3">Vehículos</h2>
+      </div>
+      <div class="col d-flex align-items-center justify-content-center">
+        <div class="d-flex flex-grow-1"></div>
+      </div>
+      <div class="col d-flex align-items-center justify-content-end mx-5">
+        <div class="col d-flex align-items-center justify-content-end mx-2">
+          <button type="button" class="btn btn-primary" @click="initModal()">
+            Agregar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr class="mx-5 my-2" />
+  <div class="table-container px-5">
+    <table class="table table-dark table-striped table-sm">
+      <thead class="sticky-header">
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Fecha de alta</th>
+          <th scope="col">Tipo</th>
+          <th scope="col">Marca</th>
+          <th scope="col">Modelo</th>
+          <th scope="col">Año</th>
+          <th scope="col">Notas</th>
+          <th scope="col">Editar</th>
+          <th scope="col">Eliminar</th>
+          <th scope="col">Restaurar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="vehiculo in vehiclesData" :key="vehiculo.ID">
+          <td>{{ vehiculo.ID }}</td>
+          <td>{{ vehiculo.FECHA_ALTA }}</td>
+          <td>{{ vehiculo.TIPO_VEHICULO }}</td>
+          <td>{{ vehiculo.MARCA }}</td>
+          <td>{{ vehiculo.MODELO }}</td>
+          <td>{{ vehiculo.ANIO }}</td>
+          <td>{{ vehiculo.NOTAS }}</td>
+
+          <td>
+            <i
+              class="bi bi-pencil"
+              role="button"
+              @click="editarVehiculo(vehiculo)"
+            ></i>
+          </td>
+          <td>
+            <i
+              class="bi bi-trash"
+              role="button"
+              @click="mostrarModalEliminar(vehiculo)"
+              v-if="vehiculo.ESTATUS === 'Activo'|vehiculo.ESTATUS === 'Indefinido'"
+            ></i>
+          </td>
+          <td>
+            <i
+              class="bi bi-cloud-arrow-up-fill"
+              role="button"
+              @click="mostrarModalReactivar(vehiculo)"
+              v-if="vehiculo.ESTATUS === 'Inactivo'"
+            ></i>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- FORMULARIO -->
+<FormVehiclesComponent
+  ref="formulario"
+  :titleModal="titleModal"
+  :modoEdicion="modoEdicion"
+  :cargarVehiculos="cargarVehiculos"
+  :nuevoVehicle="nuevoVehicle"
+  :vehicleSeleccionado="vehicleSeleccionado"
+  :modal="modal"
+  :manejarGuardarVehiculo="manejarGuardarVehiculo"
+  :mostrarAlerta="mostrarAlerta"
+  :resetModal="resetModal"
+  :tipoVehiculoData="tipoVehiculoData"
+  :marcasData="marcasData"
+  :modelosData="modelosData"
+  :aniosData="aniosData"
+/>
+
+<!-- MODAL REACTIVAR -->
+<div
+  class="modal fade"
+  id="confirmarReactivacionModal"
+  tabindex="-1"
+  aria-labelledby="confirmarReactivacionModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmarReactivacionModalLabel">
+          Confirmar Reactivación
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        ¿Está seguro que desea reactivar el vehículo {{ vehicleSeleccionado ?
+        `${vehicleSeleccionado.MARCA} ${vehicleSeleccionado.MODELO}
+        ${vehicleSeleccionado.ANIO} con ID ${vehicleSeleccionado.ID}`: '' }}?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          @click="reactivarVehiculoConfirmado"
+        >
+          Reactivar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ELIMINAR -->
+<div
+  class="modal fade"
+  id="confirmarEliminacionModal"
+  tabindex="-1"
+  aria-labelledby="confirmarEliminacionModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmarEliminacionModalLabel">
+          Confirmar Eliminación
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        ¿Está seguro que desea eliminar el vehículo {{ vehicleSeleccionado ?
+        `${vehicleSeleccionado.MARCA} ${vehicleSeleccionado.MODELO}
+        ${vehicleSeleccionado.ANIO} con ID ${vehicleSeleccionado.ID}`: '' }}?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          @click="eliminarVehiculoConfirmado"
+        >
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ALERTAS -->
+<div
+  v-if="showAlert"
+  :class="[alertClass, 'position-fixed', 'top-0', 'start-50', 'translate-middle-x', 'z-index-1000', 'w-300', 'custom-mt', 'text-center', 'rounded-3']"
+  role="alert"
+>
+  {{ alertMessage }}
+</div>

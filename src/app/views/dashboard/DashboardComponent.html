@@ -1,12 +1,90 @@
-<div
-  class="contenedor container-fluid d-flex justify-content-center align-items-center vw-100 vh-100"
->
-  <button
-    @click="logout"
-    class="bg-danger text-white fs-1 rounded-5 p-4 fw-bolder border-0"
+<div class="contenedor container-fluid vw-100 vh-100 p-0 d-flex">
+  <div
+    class="d-flex flex-column flex-shrink-0 p-3 text-bg-dark h-100 col-lg-2 col-md-3 col-sm-4"
   >
-    Cerrar sesión
-  </button>
+    <a
+      href="/"
+      class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none"
+    >
+      <i class="bi bi-house-door fs-3 mx-2"></i>
+      <span class="fs-4">Rent Car</span>
+    </a>
+    <hr />
+    <ul class="nav nav-pills flex-column mb-auto">
+      <li class="nav-item" v-for="(item, index) in filteredItems" :key="index">
+        <a
+          class="nav-link"
+          :class="{ 'active': item.active, 'text-white': !item.active }"
+          @click.prevent="changeActiveItem(item)"
+        >
+          <i :class="item.icon"></i>
+          {{ item.label }}
+        </a>
+      </li>
+    </ul>
+    <hr />
+    <div class="dropdown" ref="dropdown">
+      <a
+        href="#"
+        class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
+        data-bs-toggle="dropdown"
+        @click="toggleDropdown"
+        aria-expanded="false"
+      >
+        <img
+          :src="profileImageUrl"
+          alt=""
+          width="32"
+          height="32"
+          class="rounded-circle me-2"
+        />
+        <strong>{{userName}}</strong>
+      </a>
+      <ul
+        class="dropdown-menu dropdown-menu-dark text-small shadow"
+        :class="{ 'd-block': isDropdownOpen }"
+      >
+        <li>
+          <a class="dropdown-item" @click="openFileDialog"
+            >Cambiar foto de perfil</a
+          ><input
+            type="file"
+            ref="fileInput"
+            @change="handleFileChange"
+            style="display: none"
+          />
+        </li>
+        <li><hr class="dropdown-divider" /></li>
+        <li><a class="dropdown-item" @click="logout">Cerrar sesión</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Cropper Modal -->
+  <div v-if="showCropper" class="cropper-modals">
+    <div class="cropper-containers bg-dark">
+      <img :src="imageURL" ref="image" id="image" />
+      <div class="cropper-buttonss">
+        <button class="btn btn-secondary me-3" @click="closeCropper">
+          Cerrar
+        </button>
+        <button class="btn btn-primary" @click="cropImage">Subir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mostrar la imagen de perfil
+  <div v-if="profileImageUrl">
+    <img :src="profileImageUrl" alt="Imagen de perfil" />
+  </div> -->
+
+  <PrincipalComponent v-if="isPrincipalActive" />
+  <ClientesComponent v-if="isClientesActive" />
+  <UsuariosComponent v-if="isUsuariosActive" />
+  <RegistroComponent v-if="isRegisterActive" />
+  <CatalogoComponent v-if="isCatalogActive" />
+  <VehiclesComponent v-if="isVehiclesActive" />
+
   <div
     v-if="showAlert"
     :class="[alertClass, 'position-fixed', 'top-0', 'start-50', 'translate-middle-x', 'z-index-1000', 'w-300', 'custom-mt', 'text-center', 'rounded-3']"
