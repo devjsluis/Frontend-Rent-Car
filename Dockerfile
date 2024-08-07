@@ -1,16 +1,23 @@
-# imagen de node con tag 20.15.0-alpine
+# Imagen de node con tag 20.15.0-alpine
 FROM node:20.15.0-alpine
-# directorio de trabajo
+
+# Directorio de trabajo
 WORKDIR /app
-# copiar el archivo package.json
+
+# Copiar el archivo package.json
 COPY package.json .
-# instalar las dependencias
+
+# Instalar las dependencias
 RUN npm install
-# copiar el resto de los archivos
+
+# Copiar el resto de los archivos
 COPY . .
+
 # Construir la aplicación
 RUN npm run build
-# Exponer el puerto 8080
+
+# Exponer el puerto 5173
 EXPOSE 5173
+
 # Iniciar la aplicación
 CMD ["npm", "run", "dev"]
