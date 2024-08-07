@@ -11,6 +11,23 @@ pipelines:
             - npm run build
           services:
             - docker
+            
+    main:
+      - step:
+        name:  Push to VPS
+        image: node:20.13.1
+        caches:
+            - node
+          script:
+            - echo "Setting up SSH"
+            - mkdir -p ~/.ssh
+            - echo "$SERVER_SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+            - chmod 600 ~/.ssh/id_rsa
+            - ssh-keyscan -p 2222 $SERVER_HOST >> ~/.ssh/known_hosts
+            - echo "Deploying via SSH"
+            - ssh -i ~/.ssh/id_rsa -p 2222 -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST 'sh /home/rent-car.reffcovarrubias.com/rent-car-front-vue/deploy.sh' 
+          services:
+            - docker
 
 definitions:
   caches:
